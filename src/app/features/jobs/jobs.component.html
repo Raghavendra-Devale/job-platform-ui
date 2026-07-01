@@ -1,0 +1,362 @@
+<section class="jobs-page">
+
+  <!-- ── Hero ──────────────────────────────────────────────────────── -->
+  <div class="hero">
+    <div class="container hero-content">
+      <h1 class="hero-title">Find Your Next <span class="hero-highlight">Dream Role</span></h1>
+      <p class="hero-sub">Thousands of curated remote &amp; on-site jobs from top companies, updated daily.</p>
+
+      <form [formGroup]="filterForm" class="search-bar" id="search-form" (ngSubmit)="search()">
+        <div class="search-input-wrap">
+          <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <input
+            id="search-keyword"
+            formControlName="keyword"
+            type="search"
+            class="search-input"
+            placeholder="Job title, company, or keyword…"
+            autocomplete="off"
+            aria-label="Search jobs"
+          />
+          <!-- Live search spinner -->
+          @if (loading() && filterForm.get('keyword')?.value?.trim()) {
+            <span class="search-spinner"></span>
+          }
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg search-btn" id="btn-search">Search</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ── Layout ─────────────────────────────────────────────────────── -->
+  <div class="container jobs-layout">
+
+    <!-- Sidebar Filters -->
+    <aside class="sidebar" aria-label="Job filters">
+      <div class="sidebar-header">
+        <h2 class="sidebar-title">Filters</h2>
+        <button class="btn btn-ghost btn-sm" (click)="clearFilters()" id="btn-clear-filters" type="button">Clear all</button>
+      </div>
+
+      <form [formGroup]="filterForm" id="filter-form">
+
+        <!-- Location -->
+        <div class="filter-group">
+          <label class="filter-label" for="filter-location">Location</label>
+          @if (filters()['locations']?.length) {
+            <select id="filter-location" formControlName="location" class="form-control">
+              <option value="">All locations</option>
+              @for (loc of filters()['locations']; track loc) {
+                <option [value]="loc">{{ loc }}</option>
+              }
+            </select>
+          } @else {
+            <input id="filter-location" formControlName="location" type="text" class="form-control" placeholder="e.g. Berlin, Remote…" />
+          }
+        </div>
+
+        <!-- Source/Provider -->
+        <div class="filter-group">
+          <label class="filter-label" for="filter-provider">Source</label>
+          @if (filters()['providers']?.length) {
+            <select id="filter-provider" formControlName="provider" class="form-control">
+              <option value="">All sources</option>
+              @for (src of filters()['providers']; track src) {
+                <option [value]="src">{{ src }}</option>
+              }
+            </select>
+          } @else {
+            <input id="filter-provider" formControlName="provider" type="text" class="form-control" placeholder="e.g. RemoteOK…" />
+          }
+        </div>
+
+        <!-- Work Type -->
+        <div class="filter-group">
+          <label class="filter-label">Work type</label>
+          <div class="chip-group">
+            <label class="chip" [class.chip-active]="filterForm.get('remote')?.value === null">
+              <input type="radio" formControlName="remote" [value]="null" id="remote-all" class="chip-input" />
+              All
+            </label>
+            <label class="chip" [class.chip-active]="filterForm.get('remote')?.value === 'true'">
+              <input type="radio" formControlName="remote" value="true" id="remote-yes" class="chip-input" />
+              🌐 Remote
+            </label>
+            <label class="chip" [class.chip-active]="filterForm.get('remote')?.value === 'false'">
+              <input type="radio" formControlName="remote" value="false" id="remote-no" class="chip-input" />
+              🏢 On-site
+            </label>
+          </div>
+        </div>
+
+        <!-- Company -->
+        <div class="filter-group">
+          <label class="filter-label" for="filter-company">Company</label>
+          <input id="filter-company" formControlName="company" type="text" class="form-control" placeholder="e.g. Google, Stripe…" />
+        </div>
+
+        <!-- Job Type -->
+        <div class="filter-group">
+          <label class="filter-label" for="filter-jobtype">Job Type</label>
+          @if (filters()['jobTypes']?.length) {
+            <select id="filter-jobtype" formControlName="jobType" class="form-control">
+              <option value="">All job types</option>
+              @for (jt of filters()['jobTypes']; track jt) {
+                <option [value]="jt">{{ jt }}</option>
+              }
+            </select>
+          } @else {
+            <select id="filter-jobtype" formControlName="jobType" class="form-control">
+              <option value="">All job types</option>
+              <option value="FULL_TIME">Full-time</option>
+              <option value="PART_TIME">Part-time</option>
+              <option value="CONTRACT">Contract</option>
+              <option value="INTERNSHIP">Internship</option>
+            </select>
+          }
+        </div>
+
+        <!-- Experience Level -->
+        <div class="filter-group">
+          <label class="filter-label" for="filter-experience">Experience Level</label>
+          <select id="filter-experience" formControlName="experience" class="form-control">
+            <option value="">All levels</option>
+            <option value="JUNIOR">Junior (0-2 yrs)</option>
+            <option value="MID">Mid Level (2-5 yrs)</option>
+            <option value="SENIOR">Senior (5+ yrs)</option>
+            <option value="LEAD">Lead / Executive (8+ yrs)</option>
+          </select>
+        </div>
+
+        <!-- Sort -->
+        <div class="filter-group">
+          <label class="filter-label" for="filter-sort">Sort by</label>
+          <select id="filter-sort" formControlName="sortBy" class="form-control">
+            <option value="">Relevance</option>
+            <option value="createdAt">Newest first</option>
+            <option value="company">Company A–Z</option>
+          </select>
+        </div>
+
+        <!-- Recently Viewed Jobs Panel -->
+        <div class="recently-viewed-panel" *ngIf="authService.isAuthenticated() && recentJobs().length > 0">
+          <h3 class="rv-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+            Recently Viewed
+          </h3>
+          <div class="rv-list">
+            <div class="rv-item" *ngFor="let rJob of recentJobs().slice(0, 4)">
+              <a [routerLink]="['/jobs', rJob.id]" class="rv-item-title">{{ rJob.title }}</a>
+              <p class="rv-item-company">{{ rJob.company }}</p>
+            </div>
+          </div>
+        </div>
+      </form>
+    </aside>
+
+    <!-- Results -->
+    <div class="results-section">
+
+      <!-- Results count -->
+      <div class="results-header">
+        @if (!loading()) {
+          <span class="results-count" aria-live="polite" aria-atomic="true">
+            @if (totalElements() > 0) {
+              <strong>{{ totalElements() | number }}</strong> jobs found
+              @if (filterForm.get('keyword')?.value?.trim()) {
+                for "<em>{{ filterForm.get('keyword')?.value }}</em>"
+              }
+            }
+          </span>
+        } @else {
+          <span class="results-count results-loading">
+            <span class="skeleton" style="display:inline-block;width:120px;height:14px;vertical-align:middle;"></span>
+          </span>
+        }
+      </div>
+
+      <!-- ── Error ──────────────────────────────────────────────────── -->
+      @if (error()) {
+        <div class="error-card" role="alert" id="error-message">
+          <div class="error-icon-sm">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+          </div>
+          <p>{{ error() }}</p>
+          <button class="btn btn-outline btn-sm" (click)="search()" id="btn-retry">Retry</button>
+        </div>
+      }
+
+      <!-- ── Loading Skeletons ───────────────────────────────────────── -->
+      @if (loading()) {
+        <div class="job-list" aria-label="Loading jobs" aria-busy="true">
+          @for (i of [1,2,3,4,5,6,7,8]; track i) {
+            <div class="job-card job-card-skeleton">
+              <div class="skeleton-avatar skeleton"></div>
+              <div class="skeleton-body">
+                <div class="skeleton skeleton-title"></div>
+                <div class="skeleton skeleton-company"></div>
+                <div class="skeleton-row">
+                  <div class="skeleton skeleton-badge"></div>
+                  <div class="skeleton skeleton-badge"></div>
+                  <div class="skeleton skeleton-badge"></div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- ── Job List ────────────────────────────────────────────────── -->
+      @if (!loading() && !error() && jobs().length > 0) {
+        <div class="job-list" id="job-list">
+          @for (job of jobs(); track job.id; let i = $index) {
+            <div
+              (click)="goToJob(job.id)"
+              class="job-card animate-fade-in-up"
+              [style.animation-delay]="(Math.min(i, 7) * 50) + 'ms'"
+              [id]="'job-card-' + job.id"
+              [attr.aria-label]="job.title + ' at ' + job.company"
+              style="cursor: pointer; position: relative;"
+            >
+              <!-- Company Avatar -->
+              <div class="company-avatar" aria-hidden="true">
+                {{ job.company ? job.company.slice(0, 1).toUpperCase() : '?' }}
+              </div>
+
+              <!-- Job Info -->
+              <div class="job-info" style="flex: 1;">
+                <div class="job-top-row">
+                  <h3 class="job-title" style="margin-right: 40px;">{{ job.title }}</h3>
+                  <span class="job-time" [attr.aria-label]="'Posted ' + timeAgo(job.createdAt)">{{ timeAgo(job.createdAt) }}</span>
+                </div>
+
+                <p class="job-company">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                  {{ job.company }}
+                </p>
+
+                @if (job.location) {
+                  <p class="job-location">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    {{ job.location }}
+                  </p>
+                }
+
+                <!-- Badges row: source + remote + experience + salary + tags -->
+                <div class="job-badges-row">
+                  <span [class]="getSourceBadgeClass(job.source)">{{ job.source }}</span>
+                  <span [class]="getRemoteBadgeClass(job.remote)">{{ getRemoteBadgeLabel(job.remote) }}</span>
+                  <span class="badge badge-indigo">{{ inferExperienceLevel(job.title, job.tags) }}</span>
+                  @if (job.salary) {
+                    <span class="badge badge-green">💵 {{ job.salary }}</span>
+                  }
+                  @if (job.jobType) {
+                    <span class="badge badge-blue">{{ job.jobType }}</span>
+                  }
+                  @for (tag of getTopTags(job.tags); track tag) {
+                    <span class="badge badge-slate tag-badge">{{ tag }}</span>
+                  }
+                </div>
+
+                <!-- Footer Actions -->
+                <div class="job-card-actions-footer" style="display: flex; gap: var(--space-2); margin-top: var(--space-3); border-top: 1px dashed var(--color-border); padding-top: var(--space-3);">
+                  <button
+                    class="btn btn-xs btn-ghost"
+                    (click)="goToJob(job.id)"
+                    style="margin-right: auto; padding-left: 0; padding-right: 0;"
+                  >
+                    View Details →
+                  </button>
+
+                  @if (job.applyUrl) {
+                    <button
+                      class="btn btn-xs btn-primary"
+                      (click)="applyToJob(job.id, job.applyUrl, $event)"
+                    >
+                      Apply Now
+                    </button>
+                  }
+                </div>
+              </div>
+
+              <!-- Save button -->
+              <button 
+                class="save-job-btn" 
+                *ngIf="authService.isAuthenticated()"
+                (click)="toggleSave(job.id, $event)"
+                [attr.aria-label]="authService.isSaved(job.id) ? 'Unsave job' : 'Save job'"
+                [title]="authService.isSaved(job.id) ? 'Unsave job' : 'Save job'"
+                style="position: absolute; top: var(--space-4); right: var(--space-4); z-index: 2;"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" [attr.fill]="authService.isSaved(job.id) ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2">
+                  <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+                </svg>
+              </button>
+            </div>
+          }
+        </div>
+
+        <!-- Pagination -->
+        @if (totalPages() > 1) {
+          <nav class="pagination" aria-label="Pagination" id="pagination">
+            <button
+              class="btn btn-ghost btn-sm pag-arrow"
+              [disabled]="currentPage() === 0"
+              (click)="goToPage(currentPage() - 1)"
+              id="btn-prev-page"
+              aria-label="Previous page">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+              Prev
+            </button>
+
+            @for (p of pages(); track p) {
+              <button
+                class="btn btn-sm"
+                [class]="currentPage() === p ? 'btn-primary' : 'btn-ghost'"
+                (click)="goToPage(p)"
+                [id]="'btn-page-' + p"
+                [attr.aria-current]="currentPage() === p ? 'page' : null">
+                {{ p + 1 }}
+              </button>
+            }
+
+            <button
+              class="btn btn-ghost btn-sm pag-arrow"
+              [disabled]="currentPage() === totalPages() - 1"
+              (click)="goToPage(currentPage() + 1)"
+              id="btn-next-page"
+              aria-label="Next page">
+              Next
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </nav>
+        }
+      }
+
+      <!-- ── Empty State ─────────────────────────────────────────────── -->
+      @if (!loading() && !error() && jobs().length === 0) {
+        <div class="empty-state" id="empty-state">
+          <div class="empty-icon">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </div>
+          <h3>No jobs found</h3>
+          @if (filterForm.get('keyword')?.value?.trim()) {
+            <p>No results for "<strong>{{ filterForm.get('keyword')?.value }}</strong>". Try a different keyword or remove filters.</p>
+          } @else {
+            <p>Try adjusting your filters or search with a different keyword.</p>
+          }
+          <button class="btn btn-primary" (click)="clearFilters()" id="btn-clear-empty">Clear all filters</button>
+        </div>
+      }
+
+    </div><!-- /results-section -->
+  </div><!-- /container -->
+</section>

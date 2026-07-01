@@ -1,0 +1,186 @@
+@if (loading()) {
+  <div class="detail-page">
+    <div class="container" style="padding-top: 48px;">
+      <div class="skeleton" style="height:14px;width:80px;margin-bottom:32px;"></div>
+      <div style="display:flex;gap:20px;align-items:center;margin-bottom:24px;">
+        <div class="skeleton" style="width:64px;height:64px;border-radius:12px;flex-shrink:0;"></div>
+        <div style="flex:1;">
+          <div class="skeleton" style="height:28px;width:70%;margin-bottom:10px;"></div>
+          <div class="skeleton" style="height:16px;width:40%;"></div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 300px;gap:32px;">
+        <div>
+          <div class="skeleton" style="height:200px;width:100%;"></div>
+        </div>
+        <div class="skeleton" style="height:200px;"></div>
+      </div>
+    </div>
+  </div>
+}
+
+@if (error()) {
+  <div class="detail-page">
+    <div class="container" style="padding-top:80px;text-align:center;">
+      <div class="error-icon-lg">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+      </div>
+      <h2 style="font-size:1.25rem;font-weight:700;margin-bottom:8px;">Job not found</h2>
+      <p style="color:var(--color-text-2);margin-bottom:24px;">{{ error() }}</p>
+      <a routerLink="/jobs" class="btn btn-primary" id="btn-back-error">← Back to Jobs</a>
+    </div>
+  </div>
+}
+
+@if (!loading() && !error() && job(); as j) {
+  <article class="detail-page animate-fade-in">
+
+    <!-- ── Hero strip ─────────────────────────────────────────────── -->
+    <div class="detail-hero">
+      <div class="container">
+        <a routerLink="/jobs" class="back-link" id="link-back">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+          Back to jobs
+        </a>
+
+        <div class="hero-body">
+          <div class="company-avatar-lg" aria-hidden="true">
+            {{ j.company ? j.company.slice(0, 1).toUpperCase() : '?' }}
+          </div>
+          <div class="hero-text">
+            <h1 class="detail-title">{{ j.title }}</h1>
+            <p class="detail-company">{{ j.company }}</p>
+            <div class="hero-meta">
+              @if (j.location) {
+                <span class="hero-pill">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  {{ j.location }}
+                </span>
+              }
+              @if (j.remote === true) {
+                <span class="hero-pill hero-pill-green">🌐 Remote</span>
+              } @else if (j.remote === false) {
+                <span class="hero-pill hero-pill-amber">🏢 On-site</span>
+              }
+            </div>
+          </div>
+
+          <!-- Apply button in hero for quick access -->
+          @if (j.applyUrl) {
+            <a [href]="j.applyUrl" target="_blank" rel="noopener noreferrer"
+               class="btn btn-lg apply-hero-btn" id="btn-apply-hero" (click)="onApplyClick()">
+              Apply Now
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </a>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Content ────────────────────────────────────────────────── -->
+    <div class="container detail-layout">
+
+      <!-- Main column -->
+      <div class="detail-main">
+
+        <!-- Tags -->
+        @if (getTags(j.tags).length > 0) {
+          <section class="content-card" aria-labelledby="tags-heading">
+            <h2 class="section-title" id="tags-heading">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+              Skills &amp; Tags
+            </h2>
+            <div class="tags-list">
+              @for (tag of getTags(j.tags); track tag; let i = $index) {
+                <span [class]="getTagClass(i)" [id]="'tag-' + i">{{ tag }}</span>
+              }
+            </div>
+          </section>
+        }
+
+        <!-- Description -->
+        <section class="content-card" aria-labelledby="desc-heading">
+          <h2 class="section-title" id="desc-heading">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            About this role
+          </h2>
+          <div class="description" id="job-description">
+            @if (j.description) {
+              @for (para of getDescriptionParagraphs(j.description); track $index) {
+                <p>{{ para }}</p>
+              }
+            } @else {
+              <p class="no-desc">No description available for this position.</p>
+            }
+          </div>
+        </section>
+
+      </div>
+
+      <!-- Sidebar -->
+      <aside class="detail-sidebar">
+
+        <!-- Apply CTA -->
+        <div class="sidebar-card apply-card">
+          <h3 class="sidebar-card-title">Ready to apply?</h3>
+          <p class="sidebar-card-sub">Take the next step in your career journey.</p>
+          @if (j.applyUrl) {
+            <a [href]="j.applyUrl" target="_blank" rel="noopener noreferrer"
+               class="btn btn-primary btn-lg apply-btn" id="btn-apply" style="width: 100%; justify-content: center; margin-bottom: 8px;" (click)="onApplyClick()">
+              Apply Now
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </a>
+          } @else {
+            <p class="no-url-msg">No application link available.</p>
+          }
+          
+          <!-- Bookmark Button -->
+          <button class="btn btn-outline btn-lg" (click)="toggleSave()" *ngIf="authService.isAuthenticated() && jobId" style="width: 100%; justify-content: center; display: flex; align-items: center; gap: 8px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" [attr.fill]="authService.isSaved(jobId) ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2">
+              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+            </svg>
+            {{ authService.isSaved(jobId) ? 'Saved' : 'Save Job' }}
+          </button>
+          
+          <p class="ext-link-note" style="margin-top: 8px;">Opens on the employer's website</p>
+        </div>
+
+        <!-- Job Details card -->
+        <div class="sidebar-card">
+          <h3 class="sidebar-card-title">Job Details</h3>
+          <dl class="info-list">
+            <div class="info-row">
+              <dt>Company</dt>
+              <dd>{{ j.company || '—' }}</dd>
+            </div>
+            <div class="info-row">
+              <dt>Location</dt>
+              <dd>{{ j.location || '—' }}</dd>
+            </div>
+            <div class="info-row">
+              <dt>Work type</dt>
+              <dd>
+                @if (j.remote === true) {
+                  <span class="badge badge-green">🌐 Remote</span>
+                } @else if (j.remote === false) {
+                  <span class="badge badge-amber">🏢 On-site</span>
+                } @else {
+                  <span class="badge badge-blue">Hybrid</span>
+                }
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        <!-- Back link -->
+        <a routerLink="/jobs" class="btn btn-ghost back-btn" id="btn-back-bottom">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+          Back to all jobs
+        </a>
+
+      </aside>
+    </div>
+  </article>
+}
