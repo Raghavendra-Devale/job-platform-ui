@@ -1,0 +1,80 @@
+<div class="bell-wrapper" [class.open]="open()">
+
+  <!-- Bell Button -->
+  <button
+    class="bell-btn"
+    id="btn-notifications"
+    [class.has-unread]="notifService.unreadCount() > 0"
+    (click)="toggle()"
+    [attr.aria-expanded]="open()"
+    aria-label="Notifications"
+    title="Notifications"
+  >
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+      <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+    </svg>
+    <span class="badge-dot" *ngIf="notifService.unreadCount() > 0">
+      {{ notifService.unreadCount() > 9 ? '9+' : notifService.unreadCount() }}
+    </span>
+  </button>
+
+  <!-- Dropdown Panel -->
+  <div class="notif-dropdown" *ngIf="open()" role="dialog" aria-label="Notifications panel">
+
+    <!-- Header -->
+    <div class="notif-header">
+      <span class="notif-heading">Notifications</span>
+      <div class="notif-header-actions">
+        <button
+          class="link-btn"
+          *ngIf="notifService.unreadCount() > 0"
+          (click)="markAllRead()"
+        >Mark all read</button>
+        <button class="link-btn danger" *ngIf="notifService.notifications().length > 0" (click)="clearAll()">Clear</button>
+      </div>
+    </div>
+
+    <!-- List -->
+    <div class="notif-list" *ngIf="notifService.notifications().length > 0; else emptyNotif">
+      <div
+        class="notif-item"
+        *ngFor="let n of notifService.notifications()"
+        [class.unread]="!n.read"
+        (click)="markRead(n)"
+        [id]="'notif-' + n.id"
+      >
+        <div class="notif-icon-wrap" [class]="getIconClass(n.type)">
+          <span [innerHTML]="getIcon(n.type)"></span>
+        </div>
+        <div class="notif-body">
+          <p class="notif-title">{{ n.title }}</p>
+          <p class="notif-msg">{{ n.message }}</p>
+          <span class="notif-time">{{ timeAgo(n.createdAt) }}</span>
+        </div>
+        <div class="unread-dot" *ngIf="!n.read"></div>
+      </div>
+    </div>
+
+    <ng-template #emptyNotif>
+      <div class="notif-empty">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        <p>You're all caught up!</p>
+      </div>
+    </ng-template>
+
+    <!-- Footer -->
+    <div class="notif-footer">
+      <a routerLink="/settings" (click)="open.set(false)" class="footer-link" id="notif-settings-link">
+        Notification Settings
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+</div>

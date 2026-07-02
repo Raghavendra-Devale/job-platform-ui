@@ -1,0 +1,78 @@
+<div class="container saved-container animate-fade-in-up">
+  <div class="header-section">
+    <h1 class="page-title">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+      </svg>
+      Saved Bookmarks
+    </h1>
+    <p class="page-description">You have bookmarked {{ jobs().length }} job listings for review.</p>
+  </div>
+
+  <div class="loading-state text-center" *ngIf="loading()">
+    <app-skeleton-card type="card" [count]="3"></app-skeleton-card>
+  </div>
+
+  <div class="error-state alert-box" *ngIf="error()">
+    {{ error() }}
+  </div>
+
+  <div class="saved-grid" *ngIf="!loading() && !error()">
+    <div class="saved-list" *ngIf="jobs().length > 0; else emptyState">
+      <!-- Job Item Card -->
+      <div class="card job-card animate-fade-in stagger-{{ i % 5 + 1 }}" *ngFor="let job of jobs(); let i = index">
+        <div class="job-card-inner">
+          <div class="job-card-details">
+            <div class="title-row">
+              <a [routerLink]="['/jobs', job.id]" class="job-title">{{ job.title }}</a>
+              <span [class]="getSourceClass(job.source)">{{ job.source }}</span>
+            </div>
+            <p class="company-name">{{ job.company }}</p>
+            <div class="meta-row">
+              <span class="meta-item">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                </svg>
+                {{ job.location }}
+              </span>
+              <span [class]="getRemoteClass(job.remote)">
+                {{ getRemoteLabel(job.remote) }}
+              </span>
+              <span class="meta-item ml-auto" *ngIf="job.createdAt">
+                {{ timeAgo(job.createdAt) }}
+              </span>
+            </div>
+            <!-- Tags -->
+            <div class="tags-row" *ngIf="getTags(job.tags).length > 0">
+              <span class="badge badge-slate" *ngFor="let tag of getTags(job.tags)">{{ tag }}</span>
+            </div>
+          </div>
+
+          <!-- Action buttons -->
+          <div class="job-card-actions">
+            <a [routerLink]="['/jobs', job.id]" class="btn btn-outline btn-sm">View details</a>
+            <button class="btn btn-primary btn-sm" *ngIf="job.applyUrl" (click)="applyToJob(job)">Apply Now</button>
+            <button class="btn btn-danger btn-ghost btn-sm btn-icon" (click)="unsaveJob(job.id)" title="Remove Bookmark">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
+                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #emptyState>
+      <div class="card empty-card text-center">
+        <div class="empty-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+          </svg>
+        </div>
+        <h2>No saved jobs</h2>
+        <p>You haven't bookmarked any jobs yet. When browsing jobs, click the bookmark icon to save them for later.</p>
+        <a routerLink="/jobs" class="btn btn-primary mt-4">Browse Jobs Now</a>
+      </div>
+    </ng-template>
+  </div>
+</div>

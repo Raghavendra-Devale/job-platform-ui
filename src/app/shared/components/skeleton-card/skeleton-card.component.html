@@ -1,0 +1,55 @@
+<div class="skeleton-wrapper" [class]="'layout-' + type">
+  <div class="skeleton-item" *ngFor="let item of getLoopArray()">
+    
+    <!-- CARD TYPE (e.g. Job post) -->
+    <ng-container *ngIf="type === 'card'">
+      <div class="sk-row sk-header-row">
+        <div class="sk-circle sk-avatar"></div>
+        <div class="sk-header-text">
+          <div class="sk-bar sk-title"></div>
+          <div class="sk-bar sk-subtitle"></div>
+        </div>
+      </div>
+      <div class="sk-body">
+        <div class="sk-bar sk-full"></div>
+        <div class="sk-bar sk-half"></div>
+      </div>
+      <div class="sk-footer">
+        <div class="sk-bar sk-button"></div>
+        <div class="sk-bar sk-button-small"></div>
+      </div>
+    </ng-container>
+
+    <!-- LIST TYPE (e.g. Activity logs, small rows) -->
+    <ng-container *ngIf="type === 'list'">
+      <div class="sk-row">
+        <div class="sk-circle sk-icon-sm"></div>
+        <div class="sk-list-content">
+          <div class="sk-bar sk-title-sm"></div>
+          <div class="sk-bar sk-subtitle-sm"></div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- SUMMARY TYPE (e.g. Dashboard stat cards) -->
+    <ng-container *ngIf="type === 'summary'">
+      <div class="sk-row-summary">
+        <div class="sk-circle sk-icon-lg"></div>
+        <div class="sk-summary-content">
+          <div class="sk-bar sk-title-lg"></div>
+          <div class="sk-bar sk-value-lg"></div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- TABLE TYPE -->
+    <ng-container *ngIf="type === 'table'">
+      <div class="sk-table-row">
+        <div class="sk-bar sk-td-1"></div>
+        <div class="sk-bar sk-td-2"></div>
+        <div class="sk-bar sk-td-3"></div>
+      </div>
+    </ng-container>
+
+  </div>
+</div>

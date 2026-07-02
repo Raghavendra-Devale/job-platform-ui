@@ -1,0 +1,311 @@
+<div class="container profile-container animate-fade-in-up">
+  <!-- Profile Header Grid -->
+  <div class="profile-grid">
+    <!-- Left Column: Avatar & Resume details -->
+    <div class="left-col">
+      <!-- Main Card: Profile Details -->
+      <div class="card profile-card">
+        <div class="avatar-section">
+          <div class="profile-avatar">
+            {{ getInitials(authService.currentUser()?.name) }}
+          </div>
+          <div class="user-meta">
+            <h1 class="user-name">{{ authService.currentUser()?.name }}</h1>
+            <p class="user-role-badge">
+              <span class="badge badge-blue">{{ authService.currentUser()?.role }}</span>
+            </p>
+            <p class="user-email">{{ authService.currentUser()?.email }}</p>
+          </div>
+        </div>
+        <hr class="divider" />
+        <div class="details-section">
+          <div class="detail-item">
+            <span class="detail-label">Member Since</span>
+            <span class="detail-value">{{ formatDate(authService.currentUser()?.createdAt) }}</span>
+          </div>
+          <div class="detail-item" *ngIf="authService.currentUser()?.phone">
+            <span class="detail-label">Phone</span>
+            <span class="detail-value">{{ authService.currentUser()?.phone }}</span>
+          </div>
+          <div class="detail-item" *ngIf="authService.currentUser()?.location">
+            <span class="detail-label">Location</span>
+            <span class="detail-value">{{ authService.currentUser()?.location }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resume Upload Card -->
+      <div class="card resume-card">
+        <h2 class="section-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+          Active Resume
+        </h2>
+        <p class="section-description">Manage your uploaded resumes and choose which one is active for job matching.</p>
+
+        <!-- Current Active Resume Info -->
+        <div class="current-resume-box" *ngIf="authService.currentUser()?.resumeFileName; else noResume">
+          <div class="resume-info">
+            <svg class="file-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+            <div class="file-meta">
+              <p class="file-name" [title]="authService.currentUser()?.resumeFileName || ''">{{ authService.currentUser()?.resumeFileName }}</p>
+              <p class="file-status">Currently active for job matches</p>
+            </div>
+          </div>
+        </div>
+
+        <ng-template #noResume>
+          <div class="alert-box text-center">
+            <p>No active resume selected yet.</p>
+          </div>
+        </ng-template>
+
+        <!-- Manage Resumes Navigation Button -->
+        <div style="margin-top: var(--space-2);">
+          <a routerLink="/resumes" class="btn btn-outline" style="display: block; text-align: center; justify-content: center; width: 100%;">
+            Manage Resumes
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Settings & Forms -->
+    <div class="card settings-card">
+      <div class="tabs-header">
+        <button class="tab-btn" [class.active]="activeTab() === 'profile'" (click)="activeTab.set('profile')">Edit Profile</button>
+        <button class="tab-btn" [class.active]="activeTab() === 'preferences'" (click)="activeTab.set('preferences')">Preferences</button>
+        <button class="tab-btn" [class.active]="activeTab() === 'password'" (click)="activeTab.set('password')">Change Password</button>
+      </div>
+
+      <div class="tab-content">
+        <!-- Edit Profile Tab -->
+        <div *ngIf="activeTab() === 'profile'" class="tab-pane-content">
+          <form (submit)="onUpdateProfile($event)">
+            <div class="form-row">
+              <div class="form-group col-6">
+                <label class="form-label" for="profileName">Full Name</label>
+                <input type="text" id="profileName" class="form-input" [value]="profileName()" (input)="profileName.set($any($event.target).value)" required />
+              </div>
+              <div class="form-group col-6">
+                <label class="form-label" for="profileEmail">Email Address</label>
+                <input type="email" id="profileEmail" class="form-input" [value]="profileEmail()" (input)="profileEmail.set($any($event.target).value)" required />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group col-6">
+                <label class="form-label" for="currentRole">Current Role</label>
+                <input type="text" id="currentRole" class="form-input" [value]="currentRole()" (input)="currentRole.set($any($event.target).value)" placeholder="e.g. Software Engineer" />
+              </div>
+              <div class="form-group col-6">
+                <label class="form-label" for="experience">Years of Experience</label>
+                <input type="number" id="experience" class="form-input" [value]="experience()" (input)="experience.set($any($event.target).value ? +$any($event.target).value : null)" min="0" placeholder="e.g. 5" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="bio">Professional Bio</label>
+              <textarea id="bio" class="form-input" rows="4" [value]="bio()" (input)="bio.set($any($event.target).value)" placeholder="Briefly describe your career background and key strengths..."></textarea>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group col-6">
+                <label class="form-label" for="phone">Phone Number</label>
+                <input type="tel" id="phone" class="form-input" [value]="phone()" (input)="phone.set($any($event.target).value)" placeholder="e.g. +1 555-0199" />
+              </div>
+              <div class="form-group col-6">
+                <label class="form-label" for="location">Location (City, Country)</label>
+                <input type="text" id="location" class="form-input" [value]="location()" (input)="location.set($any($event.target).value)" placeholder="e.g. San Francisco, CA" />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group col-4">
+                <label class="form-label" for="linkedin">LinkedIn URL</label>
+                <input type="url" id="linkedin" class="form-input" [value]="linkedin()" (input)="linkedin.set($any($event.target).value)" placeholder="https://linkedin.com/in/username" />
+              </div>
+              <div class="form-group col-4">
+                <label class="form-label" for="github">GitHub Profile URL</label>
+                <input type="url" id="github" class="form-input" [value]="github()" (input)="github.set($any($event.target).value)" placeholder="https://github.com/username" />
+              </div>
+              <div class="form-group col-4">
+                <label class="form-label" for="portfolio">Portfolio Website</label>
+                <input type="url" id="portfolio" class="form-input" [value]="portfolio()" (input)="portfolio.set($any($event.target).value)" placeholder="https://username.dev" />
+              </div>
+            </div>
+
+            <div class="alert-box-inline mt-3 error" *ngIf="profileError()">
+              {{ profileError() }}
+            </div>
+            <div class="alert-box-inline mt-3 success" *ngIf="profileSuccess()">
+              {{ profileSuccess() }}
+            </div>
+
+            <div class="form-actions mt-4">
+              <button type="submit" class="btn btn-primary" [disabled]="profileLoading()">
+                <span class="spinner" *ngIf="profileLoading()"></span>
+                Save Changes
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Preferences Tab -->
+        <div *ngIf="activeTab() === 'preferences'" class="tab-pane-content">
+          <form (submit)="onUpdatePreferences($event)">
+            <div class="form-row">
+              <div class="form-group col-6">
+                <label class="form-label" for="preferredRoles">Preferred Job Roles</label>
+                <input type="text" id="preferredRoles" class="form-input" [value]="preferredRoles()" (input)="preferredRoles.set($any($event.target).value)" placeholder="e.g. Java Backend, Frontend Architect" />
+                <span class="help-text">Comma-separated roles you are targeting.</span>
+              </div>
+              <div class="form-group col-6">
+                <label class="form-label" for="preferredLocations">Preferred Locations</label>
+                <input type="text" id="preferredLocations" class="form-input" [value]="preferredLocations()" (input)="preferredLocations.set($any($event.target).value)" placeholder="e.g. Remote, Bangalore, Berlin" />
+                <span class="help-text">Comma-separated target cities or remote.</span>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group col-6">
+                <label class="form-label" for="workStyle">Desired Workplace Setup</label>
+                <select id="workStyle" class="form-input" [value]="workStyle()" (change)="workStyle.set($any($event.target).value)">
+                  <option value="ANY">Hybrid, On-site, or Remote (Any)</option>
+                  <option value="REMOTE">Remote Only</option>
+                  <option value="HYBRID">Hybrid Only</option>
+                  <option value="ONSITE">On-site Only</option>
+                </select>
+              </div>
+              <div class="form-group col-6">
+                <label class="form-label" for="salaryRange">Desired Annual Salary</label>
+                <input type="text" id="salaryRange" class="form-input" [value]="salaryRange()" (input)="salaryRange.set($any($event.target).value)" placeholder="e.g. $100,000 - $130,000" />
+              </div>
+            </div>
+
+            <!-- Job Types Checkboxes -->
+            <div class="form-group">
+              <label class="form-label">Job Modality Type</label>
+              <div class="checkbox-group">
+                <label class="checkbox-label" for="jtFullTime">
+                  <input type="checkbox" id="jtFullTime" [checked]="jobTypesFullTime()" (change)="jobTypesFullTime.set($any($event.target).checked)" />
+                  Full-time
+                </label>
+                <label class="checkbox-label" for="jtPartTime">
+                  <input type="checkbox" id="jtPartTime" [checked]="jobTypesPartTime()" (change)="jobTypesPartTime.set($any($event.target).checked)" />
+                  Part-time
+                </label>
+                <label class="checkbox-label" for="jtContract">
+                  <input type="checkbox" id="jtContract" [checked]="jobTypesContract()" (change)="jobTypesContract.set($any($event.target).checked)" />
+                  Contract
+                </label>
+                <label class="checkbox-label" for="jtInternship">
+                  <input type="checkbox" id="jtInternship" [checked]="jobTypesInternship()" (change)="jobTypesInternship.set($any($event.target).checked)" />
+                  Internship
+                </label>
+              </div>
+            </div>
+
+            <!-- Alerts Checkbox toggle -->
+            <div class="form-group">
+              <label class="checkbox-label" for="alertsToggle">
+                <input type="checkbox" id="alertsToggle" [checked]="emailAlerts()" (change)="emailAlerts.set($any($event.target).checked)" />
+                Enable email alerts for matches (recommender engine alerts)
+              </label>
+            </div>
+
+            <div class="alert-box-inline mt-3 error" *ngIf="prefError()">
+              {{ prefError() }}
+            </div>
+            <div class="alert-box-inline mt-3 success" *ngIf="prefSuccess()">
+              {{ prefSuccess() }}
+            </div>
+
+            <div class="form-actions mt-4">
+              <button type="submit" class="btn btn-primary" [disabled]="prefLoading()">
+                <span class="spinner" *ngIf="prefLoading()"></span>
+                Save Preferences
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Change Password Tab -->
+        <div *ngIf="activeTab() === 'password'" class="tab-pane-content">
+          <form (submit)="onChangePassword($event)">
+            <div class="form-group">
+              <label class="form-label" for="currentPassword">Current Password</label>
+              <input type="password" id="currentPassword" class="form-input" [value]="currentPassword()" (input)="currentPassword.set($any($event.target).value)" required />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="newPassword">New Password</label>
+              <input type="password" id="newPassword" class="form-input" [value]="newPassword()" (input)="newPassword.set($any($event.target).value)" required minlength="8" />
+              <span class="help-text">Must be at least 8 characters.</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="confirmPassword">Confirm New Password</label>
+              <input type="password" id="confirmPassword" class="form-input" [value]="confirmPassword()" (input)="confirmPassword.set($any($event.target).value)" required />
+            </div>
+
+            <div class="alert-box-inline mt-3 error" *ngIf="passwordError()">
+              {{ passwordError() }}
+            </div>
+            <div class="alert-box-inline mt-3 success" *ngIf="passwordSuccess()">
+              {{ passwordSuccess() }}
+            </div>
+
+            <div class="form-actions mt-4">
+              <button type="submit" class="btn btn-primary" [disabled]="passwordLoading()">
+                <span class="spinner" *ngIf="passwordLoading()"></span>
+                Change Password
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dashboard Activity Sidebar (Quick View) -->
+  <div style="margin-top: var(--space-8);">
+    <div class="card saved-jobs-card">
+      <h2 class="section-title">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+        </svg>
+        Saved Jobs
+      </h2>
+      <div class="jobs-list" *ngIf="savedJobs().length > 0; else noSaved">
+        <div class="job-list-item" *ngFor="let job of savedJobs().slice(0, 5)">
+          <div class="job-item-details">
+            <a [routerLink]="['/jobs', job.id]" class="job-item-title">{{ job.title }}</a>
+            <p class="job-item-company">{{ job.company }} &bull; {{ job.location }}</p>
+          </div>
+          <button class="btn btn-ghost btn-sm btn-icon" (click)="unsaveJob(job.id)" title="Unsave job">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2">
+              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+            </svg>
+          </button>
+        </div>
+        <div class="view-all-link-box" *ngIf="savedJobs().length > 5">
+          <a routerLink="/saved-jobs" class="view-all-link">View all {{ savedJobs().length }} saved jobs &rarr;</a>
+        </div>
+      </div>
+      <ng-template #noSaved>
+        <div class="empty-list-box text-center">
+          <p>You haven't bookmarked any jobs yet.</p>
+          <a routerLink="/jobs" class="btn btn-outline btn-sm mt-3">Find Jobs</a>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,147 @@
+<div class="applications-page">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1 class="page-title">
+        <span class="title-icon">📋</span>
+        Application Tracker
+      </h1>
+      <p class="page-subtitle">Drag cards between columns — or use the arrow buttons — to update status</p>
+    </div>
+    <div class="header-right">
+      <div class="total-badge">
+        <span class="total-count">{{ applications().length }}</span>
+        <span class="total-label">Applications</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-wrapper" *ngIf="loading()">
+    <app-skeleton-card type="card" [count]="3"></app-skeleton-card>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state-full" *ngIf="!loading() && applications().length === 0">
+    <div class="empty-icon">🚀</div>
+    <h2>No Applications Yet</h2>
+    <p>Start applying to jobs and track your pipeline here. When you click <strong>"Apply Now"</strong> on a job listing, it appears in this board automatically.</p>
+    <a routerLink="/jobs" class="btn btn-primary">Browse Jobs</a>
+  </div>
+
+  <!-- Kanban Board -->
+  <div class="kanban-board" *ngIf="!loading() && applications().length > 0">
+    <div
+      class="kanban-column"
+      *ngFor="let col of columns"
+      [id]="'col-' + col.id"
+      (dragover)="onDragOver($event, col.id)"
+      (dragleave)="onDragLeave()"
+      (drop)="onDrop($event, col.id)"
+      [class.drag-over]="dragOverColumn() === col.id && draggingApp()?.status !== col.id"
+    >
+      <!-- Column Header -->
+      <div class="col-header" [style.background]="col.headerBg" [style.color]="col.headerColor">
+        <div class="col-header-left">
+          <span class="col-icon">{{ col.icon }}</span>
+          <span class="col-title">{{ col.label }}</span>
+        </div>
+        <span class="col-count" [style.background]="col.accentColor">
+          {{ getColumnCount(col.id) }}
+        </span>
+      </div>
+
+      <!-- Drop Zone Indicator -->
+      <div class="drop-hint" [class.visible]="dragOverColumn() === col.id && draggingApp()?.status !== col.id">
+        ↓ Drop here
+      </div>
+
+      <!-- Cards -->
+      <div class="col-cards">
+        <div
+          class="kanban-card"
+          *ngFor="let app of getColumnApps(col.id)"
+          draggable="true"
+          [class.dragging]="draggingApp()?.id === app.id"
+          [class.updating]="updatingId() === app.id"
+          (dragstart)="onDragStart($event, app)"
+          (dragend)="onDragEnd()"
+          [id]="'card-' + app.id"
+        >
+          <!-- Left accent bar -->
+          <div class="card-accent" [style.background]="col.accentColor"></div>
+
+          <!-- Drag handle -->
+          <div class="drag-handle" title="Drag to move">⠿</div>
+
+          <!-- Card Body -->
+          <div class="card-body">
+            <h3 class="card-job-title" [routerLink]="['/jobs', app.jobId]" title="{{ app.jobTitle }}">
+              {{ app.jobTitle }}
+            </h3>
+            <p class="card-company">{{ app.company }}</p>
+            <p class="card-location">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+              </svg>
+              {{ app.location }}
+            </p>
+
+            <!-- Resume Badge -->
+            <div class="card-resume" *ngIf="app.resumeName">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+              </svg>
+              {{ app.resumeName }}
+            </div>
+
+            <!-- Dates -->
+            <div class="card-dates">
+              <span class="date-item">Applied {{ formatDate(app.appliedAt) }}</span>
+              <span class="date-item updated" *ngIf="app.updatedAt">
+                Updated {{ formatDate(app.updatedAt) }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Card Footer Actions -->
+          <div class="card-actions">
+            <div class="move-actions">
+              <button
+                class="move-btn"
+                *ngIf="getPrevStatus(col.id) as prev"
+                (click)="updateStatus(app.id, prev)"
+                [disabled]="updatingId() === app.id"
+                title="Move back"
+              >← {{ getStatusLabel(prev) }}</button>
+              <button
+                class="move-btn move-btn-fwd"
+                *ngIf="getNextStatus(col.id) as next"
+                (click)="updateStatus(app.id, next)"
+                [disabled]="updatingId() === app.id"
+                title="Move forward"
+              >{{ getStatusLabel(next) }} →</button>
+            </div>
+            <button
+              class="delete-btn"
+              (click)="deleteApp(app.id)"
+              [disabled]="updatingId() === app.id"
+              title="Remove from tracker"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"/>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Column Empty Placeholder -->
+        <div class="col-empty" *ngIf="getColumnCount(col.id) === 0">
+          <span class="col-empty-icon">{{ col.icon }}</span>
+          <p>Nothing here yet</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

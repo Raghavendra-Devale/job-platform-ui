@@ -1,0 +1,134 @@
+<div class="rec-page animate-fade-in-up">
+
+  <!-- ── Page Header ── -->
+  <div class="rec-header">
+    <div class="header-left">
+      <div class="header-icon-wrap">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="page-title">Job Recommendations</h1>
+        <p class="page-subtitle">
+          Personalized matches based on your resume &amp; profile.
+          <span class="ai-pill">AI-powered — coming soon</span>
+        </p>
+      </div>
+    </div>
+
+    <div class="header-stat" *ngIf="!loading() && !error()">
+      <span class="stat-number">{{ recommendations().length }}</span>
+      <span class="stat-label">Matches found</span>
+    </div>
+  </div>
+
+  <!-- ── Loading ── -->
+  <div class="loading-state" *ngIf="loading()">
+    <app-skeleton-card type="card" [count]="3"></app-skeleton-card>
+  </div>
+
+  <!-- ── Error ── -->
+  <div class="error-box" *ngIf="error() && !loading()">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    {{ error() }}
+  </div>
+
+  <!-- ── Cards Grid ── -->
+  <div class="rec-grid" *ngIf="!loading() && !error()">
+
+    <!-- Recommendation Card -->
+    <div
+      class="rec-card"
+      *ngFor="let rec of recommendations(); let i = index"
+      [class.top-match]="rec.matchScore >= 85"
+      [style.animation-delay]="(i * 60) + 'ms'"
+    >
+      <!-- Top Match ribbon -->
+      <div class="top-match-ribbon" *ngIf="rec.matchScore >= 85">⭐ Top Match</div>
+
+      <!-- Score ring + header -->
+      <div class="card-top">
+        <div class="score-ring" [class]="getScoreClass(rec.matchScore)" [attr.aria-label]="rec.matchScore + '% match'">
+          <svg class="ring-svg" viewBox="0 0 64 64">
+            <circle class="ring-bg"   cx="32" cy="32" r="26" />
+            <circle class="ring-fill" cx="32" cy="32" r="26"
+              [style.stroke-dasharray]="getCircumference()"
+              [style.stroke-dashoffset]="getDashOffset(rec.matchScore)"
+            />
+          </svg>
+          <span class="score-text">{{ rec.matchScore }}%</span>
+        </div>
+
+        <div class="card-header-info">
+          <h2 class="rec-title">{{ rec.jobTitle }}</h2>
+          <p class="rec-company">{{ rec.company }}</p>
+          <p class="rec-location">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+            </svg>
+            {{ rec.location }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Matched Skills -->
+      <div class="section">
+        <p class="section-label">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          Matched Skills
+        </p>
+        <div class="skill-chips">
+          <span class="skill-chip" *ngFor="let skill of rec.matchedSkills">{{ skill }}</span>
+        </div>
+      </div>
+
+      <!-- Reason -->
+      <div class="section">
+        <p class="section-label">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          Why this role?
+        </p>
+        <p class="reason-text">{{ rec.reason }}</p>
+      </div>
+
+      <!-- Actions -->
+      <div class="card-actions">
+        <a *ngIf="rec.applyUrl" [href]="rec.applyUrl" target="_blank" rel="noopener" class="btn btn-primary btn-sm" [id]="'btn-apply-' + rec.id" (click)="trackApplication(rec)">
+          Apply Now
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/>
+          </svg>
+        </a>
+        <button class="btn btn-outline btn-sm btn-no-apply" *ngIf="!rec.applyUrl" disabled>No Apply Link</button>
+        <button class="btn btn-ghost btn-sm" [id]="'btn-save-' + rec.id" title="Save job" (click)="saveJob(rec)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+          </svg>
+          Save
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Empty State ── -->
+  <div class="empty-state" *ngIf="!loading() && !error() && recommendations().length === 0">
+    <div class="empty-icon">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+      </svg>
+    </div>
+    <h2>No recommendations yet</h2>
+    <p>Upload a resume and complete your profile so we can find the best matches for you.</p>
+    <a routerLink="/resumes" class="btn btn-primary">Upload Resume</a>
+  </div>
+
+</div>

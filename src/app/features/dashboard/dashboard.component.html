@@ -1,0 +1,253 @@
+<div class="dashboard-container">
+  <div class="dashboard-header">
+    <div class="header-titles">
+      <h1 class="welcome-title">Welcome back, {{ authService.currentUser()?.name || 'User' }}!</h1>
+      <p class="welcome-subtitle">Here's an overview of your career search and active resume pipeline.</p>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-wrapper" *ngIf="loadingSummary() && loadingApps()">
+    <div class="skeleton-grid-summary">
+      <app-skeleton-card type="summary" [count]="5"></app-skeleton-card>
+    </div>
+    <div class="skeleton-grid-body">
+      <app-skeleton-card type="card" [count]="2"></app-skeleton-card>
+      <app-skeleton-card type="list" [count]="4"></app-skeleton-card>
+    </div>
+  </div>
+
+  <ng-container *ngIf="!loadingSummary() || !loadingApps()">
+    <!-- Stats Cards Grid -->
+    <div class="stats-grid">
+      <!-- Active Resume Card -->
+      <div class="stat-card stat-resume">
+        <div class="stat-icon-wrapper">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <span class="stat-label">Active Resume</span>
+          <span class="stat-value text-truncate" [title]="summary()?.activeResumeName || 'None'">
+            {{ summary()?.activeResumeName || 'No active resume' }}
+          </span>
+          <span class="stat-desc">Primary application file</span>
+        </div>
+      </div>
+
+      <!-- Total Resumes Card -->
+      <div class="stat-card stat-total-resumes">
+        <div class="stat-icon-wrapper">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="2" width="20" height="20" rx="2" ry="2"/>
+            <path d="M9 17h6M9 12h6M9 7h4"/>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <span class="stat-label">Total Resumes</span>
+          <span class="stat-value">{{ summary()?.totalResumesCount || 0 }} / 4</span>
+          <span class="stat-desc">Manage in Resumes tab</span>
+        </div>
+      </div>
+
+      <!-- Saved Jobs Card -->
+      <div class="stat-card stat-saved-jobs">
+        <div class="stat-icon-wrapper">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <span class="stat-label">Saved Jobs</span>
+          <span class="stat-value">{{ summary()?.savedJobsCount || 0 }}</span>
+          <span class="stat-desc">Bookmarked openings</span>
+        </div>
+      </div>
+
+      <!-- Applications Card -->
+      <div class="stat-card stat-apps">
+        <div class="stat-icon-wrapper">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <span class="stat-label">Applications</span>
+          <span class="stat-value">{{ summary()?.applicationsCount || 0 }}</span>
+          <span class="stat-desc">Total job application tracks</span>
+        </div>
+      </div>
+
+      <!-- Interviews Card -->
+      <div class="stat-card stat-interviews">
+        <div class="stat-icon-wrapper">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <span class="stat-label">Interviews</span>
+          <span class="stat-value">{{ summary()?.interviewsCount || 0 }}</span>
+          <span class="stat-desc">Active interview loops</span>
+        </div>
+      </div>
+
+      <!-- Offers Card -->
+      <div class="stat-card stat-offers">
+        <div class="stat-icon-wrapper">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+        </div>
+        <div class="stat-content">
+          <span class="stat-label">Offers</span>
+          <span class="stat-value">{{ summary()?.offersCount || 0 }}</span>
+          <span class="stat-desc">Offer letters received</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="main-dashboard-grid">
+      <!-- Column 1: Job Applications Tracker -->
+      <div class="card applications-tracker-card">
+        <h2 class="card-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          Application Status Tracker
+        </h2>
+        <p class="card-subtitle">Keep tabs on where you stand for each role you've applied to.</p>
+
+        <div class="applications-list" *ngIf="applications().length > 0; else noApps">
+          <div class="application-item-card" *ngFor="let app of applications()">
+            <div class="app-item-main">
+              <div>
+                <h3 class="app-job-title" [routerLink]="['/jobs', app.jobId]">{{ app.jobTitle }}</h3>
+                <p class="app-job-meta">{{ app.company }} • {{ app.location }}</p>
+                <div style="display: flex; gap: var(--space-2); align-items: center; margin-top: var(--space-1); flex-wrap: wrap;">
+                  <span class="app-date">Applied {{ formatDate(app.appliedAt) }}</span>
+                  <span class="badge badge-slate" *ngIf="app.resumeName" style="font-size: 10px; display: inline-flex; align-items: center; gap: 4px; padding: 2px 6px;">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-text-3);">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                      <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    {{ app.resumeName }}
+                  </span>
+                </div>
+              </div>
+              <div>
+                <span [class]="'badge ' + getStatusClass(app.status)">{{ app.status }}</span>
+              </div>
+            </div>
+
+            <!-- Action Controls -->
+            <div class="app-actions">
+              <span class="actions-label">Change Status:</span>
+              <div class="actions-buttons-group">
+                <button class="btn btn-xs btn-outline" *ngIf="app.status !== 'APPLIED'" (click)="updateStatus(app.id, 'APPLIED')">Applied</button>
+                <button class="btn btn-xs btn-outline" *ngIf="app.status !== 'INTERVIEW'" (click)="updateStatus(app.id, 'INTERVIEW')">Interview</button>
+                <button class="btn btn-xs btn-outline" *ngIf="app.status !== 'OFFER'" (click)="updateStatus(app.id, 'OFFER')">Offer</button>
+                <button class="btn btn-xs btn-outline" *ngIf="app.status !== 'SCREENING'" (click)="updateStatus(app.id, 'SCREENING')">Screening</button>
+                <button class="btn btn-xs btn-outline" *ngIf="app.status !== 'REJECTED'" (click)="updateStatus(app.id, 'REJECTED')">Rejected</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <ng-template #noApps>
+          <div class="empty-state">
+            <div class="empty-icon-circle">📂</div>
+            <h3>No tracked applications</h3>
+            <p>Go to Jobs or Bookmarks and click "Apply" on any opening to track it here automatically.</p>
+            <a routerLink="/jobs" class="btn btn-primary btn-sm mt-3">Find Jobs</a>
+          </div>
+        </ng-template>
+      </div>
+
+      <!-- Column 2: Widgets (Activity & Recents) -->
+      <div class="dashboard-sidebar-column">
+        <!-- Recent Activities Card -->
+        <div class="card recent-activity-card">
+          <h2 class="card-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+            </svg>
+            Recent Activities
+          </h2>
+          <p class="card-subtitle">Your actions and profile updates tracked by the platform.</p>
+
+          <div class="activity-timeline" *ngIf="summary()?.recentActivities?.length; else noActivities">
+            <div class="activity-item" *ngFor="let act of summary()?.recentActivities">
+              <div class="activity-dot"></div>
+              <div class="activity-info">
+                <p class="activity-desc">{{ act.description }}</p>
+                <span class="activity-time">{{ formatDate(act.createdAt) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <ng-template #noActivities>
+            <div class="empty-state">
+              <div class="empty-icon-circle">🔔</div>
+              <h3>No Activity Logged</h3>
+              <p>Your uploads, resume activations, and applications will create activity events here.</p>
+            </div>
+          </ng-template>
+        </div>
+
+        <!-- Recently Saved Jobs Card -->
+        <div class="card recent-jobs-widget-card">
+          <h2 class="card-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+            </svg>
+            Recently Saved Jobs
+          </h2>
+          <p class="card-subtitle">Your bookmarked positions for quick reference.</p>
+          
+          <div class="widget-list" *ngIf="savedJobs().length > 0; else noSaved">
+            <div class="widget-item" *ngFor="let job of savedJobs()">
+              <div class="widget-item-info">
+                <h4 class="widget-item-title" [routerLink]="['/jobs', job.id]">{{ job.title }}</h4>
+                <p class="widget-item-meta">{{ job.company }} • {{ job.location }}</p>
+              </div>
+              <button class="btn btn-xs btn-danger-outline btn-icon-only" (click)="unsaveJob(job.id)" title="Unsave Job">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <ng-template #noSaved>
+            <p class="empty-widget-text">No saved jobs yet.</p>
+          </ng-template>
+        </div>
+
+        <!-- Recently Viewed Jobs Card -->
+        <div class="card recent-jobs-widget-card">
+          <h2 class="card-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+            </svg>
+            Recently Viewed Jobs
+          </h2>
+          <p class="card-subtitle">The openings you explored recently.</p>
+          
+          <div class="widget-list" *ngIf="recentJobs().length > 0; else noViewed">
+            <div class="widget-item" *ngFor="let job of recentJobs()">
+              <div class="widget-item-info">
+                <h4 class="widget-item-title" [routerLink]="['/jobs', job.id]">{{ job.title }}</h4>
+                <p class="widget-item-meta">{{ job.company }} • {{ job.location }}</p>
+              </div>
+            </div>
+          </div>
+          <ng-template #noViewed>
+            <p class="empty-widget-text">No recently viewed jobs.</p>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>
