@@ -7,11 +7,12 @@ import { AuthService } from '../../core/services/auth.service';
 import { DashboardService } from '../../core/services/dashboard.service';
 import { ToastService } from '../../core/services/toast.service';
 import { SkeletonCardComponent } from '../../shared/components/skeleton-card/skeleton-card.component';
+import { RecommendationCardComponent } from '../../shared/components/recommendation-card/recommendation-card.component';
 
 @Component({
   selector: 'app-recommendations',
   standalone: true,
-  imports: [CommonModule, RouterLink, SkeletonCardComponent],
+  imports: [CommonModule, RouterLink, SkeletonCardComponent, RecommendationCardComponent],
   templateUrl: './recommendations.component.html',
   styleUrls: ['./recommendations.component.css'],
 })

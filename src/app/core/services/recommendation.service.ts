@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { delay, map } from 'rxjs/operators';
 import { JobRecommendation } from '../models/recommendation.models';
 
 // ── Mock data (replace with real HTTP call when backend is ready) ──────────
@@ -62,13 +62,20 @@ const MOCK_RECOMMENDATIONS: JobRecommendation[] = [
 export class RecommendationService {
   private readonly http = inject(HttpClient);
 
-  /**
-   * GET /recommendations
-   * Swap `of(MOCK_RECOMMENDATIONS).pipe(delay(600))` for the real call:
-   *   return this.http.get<JobRecommendation[]>('/api/recommendations');
-   */
   getRecommendations(): Observable<JobRecommendation[]> {
-    // Mock — simulates 600 ms network latency
-    return of(MOCK_RECOMMENDATIONS).pipe(delay(600));
+    return this.http.post<{ recommendations: any[] }>('/api/recommendations', {}).pipe(
+      map(response => {
+        return (response.recommendations || []).map((item, index) => ({
+          id: index + 1,
+          jobTitle: item.job_title || item.jobTitle || 'Unknown Position',
+          company: item.company || 'Unknown Company',
+          location: item.location || 'Remote',
+          matchScore: item.match_score || item.matchScore || 0,
+          matchedSkills: item.matched_skills || item.matchedSkills || [],
+          reason: item.reason || '',
+          applyUrl: item.apply_url || item.applyUrl || null
+        }));
+      })
+    );
   }
 }

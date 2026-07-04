@@ -1,0 +1,42 @@
+<div *ngIf="isLoading" class="rec-card skeleton">
+  <div class="skeleton-header">
+    <div class="skeleton-title"></div>
+    <div class="skeleton-score"></div>
+  </div>
+  <div class="skeleton-meta"></div>
+  <div class="skeleton-reason-line"></div>
+  <div class="skeleton-reason-line short"></div>
+  <div class="skeleton-skills">
+    <div class="skeleton-skill"></div>
+    <div class="skeleton-skill"></div>
+    <div class="skeleton-skill"></div>
+  </div>
+  <div class="skeleton-actions">
+    <div class="skeleton-btn"></div>
+    <div class="skeleton-btn"></div>
+  </div>
+</div>
+
+<div *ngIf="!isLoading" class="rec-card">
+  <div class="rec-header">
+    <div class="rec-titles">
+      <h3 class="rec-job-title">{{ recommendation.jobTitle }}</h3>
+      <span class="badge" [ngClass]="getScoreClass(recommendation.matchScore)">
+        {{ recommendation.matchScore }}% Match
+      </span>
+    </div>
+  </div>
+  <p class="rec-meta">{{ recommendation.company }} • {{ recommendation.location }}</p>
+  <p class="rec-reason">{{ recommendation.reason }}</p>
+  
+  <div class="rec-skills" *ngIf="recommendation.matchedSkills?.length">
+    <span *ngFor="let skill of recommendation.matchedSkills" class="badge badge-blue">
+      {{ skill }}
+    </span>
+  </div>
+
+  <div class="rec-actions">
+    <button *ngIf="recommendation.applyUrl" class="btn btn-sm btn-primary" (click)="onApply()">Apply Now</button>
+    <button class="btn btn-sm btn-outline" (click)="onSave()">Save Job</button>
+  </div>
+</div>

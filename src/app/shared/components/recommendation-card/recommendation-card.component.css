@@ -1,0 +1,155 @@
+.rec-card {
+  border: 1px solid var(--color-border-1, #e2e8f0);
+  padding: var(--space-4, 16px);
+  border-radius: var(--radius-lg, 8px);
+  background: var(--color-bg-2, #ffffff);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3, 12px);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.rec-card:hover {
+  border-color: var(--color-primary-base, #3b82f6);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.rec-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.rec-titles {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.rec-job-title {
+  font-size: var(--font-lg, 18px);
+  font-weight: 600;
+  color: var(--color-text-1, #1e293b);
+  margin: 0;
+  flex: 1;
+}
+
+.rec-meta {
+  color: var(--color-text-2, #64748b);
+  font-size: 13px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.rec-reason {
+  color: var(--color-text-2, #475569);
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.rec-skills {
+  display: flex;
+  gap: var(--space-1, 4px);
+  flex-wrap: wrap;
+}
+
+.rec-actions {
+  display: flex;
+  gap: var(--space-2, 8px);
+  margin-top: var(--space-2, 8px);
+  justify-content: flex-end;
+}
+
+/* Skeleton Styles */
+.skeleton {
+  pointer-events: none;
+}
+
+.skeleton-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.skeleton-title {
+  height: 20px;
+  width: 60%;
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: 4px;
+}
+
+.skeleton-score {
+  height: 24px;
+  width: 80px;
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: 9999px;
+}
+
+.skeleton-meta {
+  height: 14px;
+  width: 40%;
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: 4px;
+}
+
+.skeleton-reason-line {
+  height: 14px;
+  width: 100%;
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: 4px;
+}
+
+.skeleton-reason-line.short {
+  width: 80%;
+}
+
+.skeleton-skills {
+  display: flex;
+  gap: 8px;
+}
+
+.skeleton-skill {
+  height: 20px;
+  width: 60px;
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: 4px;
+}
+
+.skeleton-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.skeleton-btn {
+  height: 32px;
+  width: 90px;
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: 6px;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
