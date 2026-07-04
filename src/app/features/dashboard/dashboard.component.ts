@@ -10,6 +10,7 @@ import { SkeletonCardComponent } from '../../shared/components/skeleton-card/ske
 import { RecommendationService } from '../../core/services/recommendation.service';
 import { JobRecommendation } from '../../core/models/recommendation.models';
 import { RecommendationCardComponent } from '../../shared/components/recommendation-card/recommendation-card.component';
+import { ConfirmationModalService } from '../../core/services/confirmation-modal.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -23,6 +24,7 @@ export class DashboardComponent implements OnInit {
   private readonly dashboardService = inject(DashboardService);
   private readonly toastService = inject(ToastService);
   private readonly recService = inject(RecommendationService);
+  private readonly confirmService = inject(ConfirmationModalService);
 
   summary = signal<DashboardSummary | null>(null);
   applications = signal<JobApplication[]>([]);
@@ -131,20 +133,30 @@ export class DashboardComponent implements OnInit {
   }
 
   getAIRecommendations(): void {
-    this.loadingRecs.set(true);
-    this.recError.set(null);
-    this.recService.getRecommendations().subscribe({
-      next: (data) => {
-        this.recommendations.set(data);
-        this.loadingRecs.set(false);
-        this.toastService.showSuccess('AI Recommendations generated successfully!');
-      },
-      error: (err) => {
-        console.error('Failed to generate recommendations', err);
-        const errMsg = err.error?.error || 'Failed to generate recommendations. Please try again.';
-        this.recError.set(errMsg);
-        this.loadingRecs.set(false);
-        this.toastService.showError('Failed to generate recommendations');
+    const resumeName = this.summary()?.activeResumeName || 'your active resume';
+    this.confirmService.confirm({
+      title: 'Generate AI Recommendations',
+      message: `Would you like to use your active resume "${resumeName}" to generate AI job recommendations?`,
+      confirmText: 'Yes, proceed',
+      cancelText: 'Cancel'
+    }).then((confirmed) => {
+      if (confirmed) {
+        this.loadingRecs.set(true);
+        this.recError.set(null);
+        this.recService.getRecommendations().subscribe({
+          next: (data) => {
+            this.recommendations.set(data);
+            this.loadingRecs.set(false);
+            this.toastService.showSuccess('AI Recommendations generated successfully!');
+          },
+          error: (err) => {
+            console.error('Failed to generate recommendations', err);
+            const errMsg = err.error?.error || 'Failed to generate recommendations. Please try again.';
+            this.recError.set(errMsg);
+            this.loadingRecs.set(false);
+            this.toastService.showError('Failed to generate recommendations');
+          }
+        });
       }
     });
   }
