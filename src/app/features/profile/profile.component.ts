@@ -95,7 +95,7 @@ export class UserProfileComponent implements OnInit {
         this.jobTypesContract.set(jt.includes('CONTRACT'));
         this.jobTypesInternship.set(jt.includes('INTERNSHIP'));
       }
-    });
+    }, { allowSignalWrites: true });
   }
 
   ngOnInit(): void {

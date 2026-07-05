@@ -18,9 +18,18 @@
       </div>
     </div>
 
-    <div class="header-stat" *ngIf="!loading() && !error()">
-      <span class="stat-number">{{ recommendations().length }}</span>
-      <span class="stat-label">Matches found</span>
+    <div class="header-right" style="display: flex; align-items: center; gap: var(--space-3);">
+      <button class="btn btn-outline btn-sm" (click)="refreshRecommendations()" [disabled]="loading()" id="btn-refresh-recs" style="display: flex; align-items: center; gap: var(--space-2);">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" [style.animation]="loading() ? 'spin 1s linear infinite' : 'none'">
+          <path d="M23 4v6h-6M1 20v-6h6"/>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+        </svg>
+        Refresh AI Matches
+      </button>
+      <div class="header-stat" *ngIf="!loading() && !error()">
+        <span class="stat-number">{{ recommendations().length }}</span>
+        <span class="stat-label">Matches found</span>
+      </div>
     </div>
   </div>
 

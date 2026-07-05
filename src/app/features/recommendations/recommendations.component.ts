@@ -29,13 +29,23 @@ export class RecommendationsComponent implements OnInit {
   private readonly CIRCUMFERENCE = 2 * Math.PI * 26; // r=26
 
   ngOnInit(): void {
+    this.refreshRecommendations();
+  }
+
+  refreshRecommendations(): void {
+    this.loading.set(true);
+    this.error.set(null);
     this.recService.getRecommendations().subscribe({
       next: (data) => {
         this.recommendations.set(data);
         this.loading.set(false);
       },
-      error: () => {
-        this.error.set('Failed to load recommendations. Please try again later.');
+      error: (err: any) => {
+        if (err && err.status === 404) {
+          this.error.set('No active resume found. Please upload a resume first to receive personalized recommendations.');
+        } else {
+          this.error.set('Failed to load recommendations. Please try again later.');
+        }
         this.loading.set(false);
       }
     });

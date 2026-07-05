@@ -1,6 +1,6 @@
 # 🎨 Job Platform UI
 
-The frontend single-page application for the Job Platform, built with **Angular 17** using standalone components, lazy-loaded routes, and view transitions. Provides a modern, responsive interface for job seekers to browse listings, manage applications, and build their professional profile.
+The frontend single-page application for the Job Platform, built with **Angular 17** using standalone components, lazy-loaded routes, and view transitions. Provides a modern, responsive interface for job seekers to browse listings, manage applications, and build their professional profile with AI resume intelligence.
 
 ---
 
@@ -38,19 +38,17 @@ src/app/
 │       └── confirmation-modal.service.ts # Confirmation dialog service
 │
 ├── features/                           # Feature modules (lazy-loaded)
-│   ├── auth/                           # Authentication
-│   │   ├── login/                      # Login page
-│   │   └── register/                   # Registration page
+│   ├── auth/                           # Authentication (Login, Register pages)
 │   ├── jobs/                           # Job listing & search
 │   ├── job-detail/                     # Individual job details
 │   ├── dashboard/                      # User dashboard with analytics
 │   ├── applications/                   # Application tracking
 │   ├── saved-jobs/                     # Bookmarked jobs
-│   ├── resumes/                        # Resume management
-│   ├── recommendations/                # Personalized job recommendations
-│   ├── profile/                        # User profile management
+│   ├── resumes/                        # Resume management & AI processing badges
+│   ├── recommendations/                # AI job recommendations with Refresh matching
+│   ├── profile/                        # User profile management (skills filters)
 │   ├── settings/                       # Account settings
-│   └── admin/                          # Admin panel
+│   └── admin/                          # Admin panel (manual job sync button)
 │
 └── shared/                             # Reusable UI components
     ├── navbar/                         # Navigation bar
@@ -109,6 +107,36 @@ Output is generated in the `dist/` directory.
 
 ---
 
+## 🔌 API Proxy target configuration
+
+To avoid CORS and connect features during development, `job-platform-ui` relies on `src/proxy.conf.json`.
+
+### Local running
+Change `target` to `localhost` to connect to local Spring Boot:
+```json
+{
+  "/api": {
+    "target": "http://localhost:8080",
+    "secure": false,
+    "changeOrigin": true
+  }
+}
+```
+
+### Docker Compose running
+Revert `target` to the container service name:
+```json
+{
+  "/api": {
+    "target": "http://job-platform-api:8080",
+    "secure": false,
+    "changeOrigin": true
+  }
+}
+```
+
+---
+
 ## 🗺️ Routing
 
 All feature routes use **lazy loading** for optimal bundle splitting:
@@ -119,14 +147,14 @@ All feature routes use **lazy loading** for optimal bundle splitting:
 | `/jobs/:id` | `JobDetailComponent` | ❌ | View job details |
 | `/login` | `LoginComponent` | 🚫 Guest only | User login |
 | `/register` | `RegisterComponent` | 🚫 Guest only | User registration |
-| `/dashboard` | `DashboardComponent` | ✅ | User analytics dashboard |
+| `/dashboard` | `DashboardComponent` | ✅ | User analytics dashboard & AI recommendations trigger |
 | `/applications` | `ApplicationsComponent` | ✅ | Track job applications |
 | `/saved-jobs` | `SavedJobsComponent` | ✅ | View saved/bookmarked jobs |
-| `/resumes` | `ResumesComponent` | ✅ | Manage resumes |
-| `/recommendations` | `RecommendationsComponent` | ✅ | Personalized job suggestions |
-| `/profile` | `UserProfileComponent` | ✅ | Edit user profile |
+| `/resumes` | `ResumesComponent` | ✅ | Manage resumes & verify parsing status |
+| `/recommendations` | `RecommendationsComponent` | ✅ | AI recommendations & manual re-scoring |
+| `/profile` | `UserProfileComponent` | ✅ | Edit user profile & active skills |
 | `/settings` | `SettingsComponent` | ✅ | Account settings |
-| `/admin` | `AdminComponent` | — | Admin panel |
+| `/admin` | `AdminComponent` | — | Admin panel & run sync tool |
 
 **Route Guards:**
 - `authGuard` — Redirects unauthenticated users to `/login`
@@ -191,9 +219,9 @@ The UI communicates with the backend via REST calls through Angular's `HttpClien
 | Service | Responsibility |
 |---------|---------------|
 | `AuthService` | Login, registration, JWT management, user state |
-| `JobService` | Job CRUD, search, applications, saved jobs |
+| `JobService` | Job CRUD, search, applications, saved jobs, sync triggers |
 | `DashboardService` | Dashboard statistics & analytics |
-| `RecommendationService` | Personalized job recommendations |
+| `RecommendationService` | Personalized job recommendations generator |
 | `NotificationService` | User notifications |
 | `ToastService` | UI toast notifications |
 | `ConfirmationModalService` | Confirmation dialogs |
