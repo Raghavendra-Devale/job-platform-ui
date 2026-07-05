@@ -50,6 +50,10 @@
             "development": {
               "buildTarget": "job-platform-ui:build:development",
               "proxyConfig": "src/proxy.conf.json"
+            },
+            "docker": {
+              "buildTarget": "job-platform-ui:build:development",
+              "proxyConfig": "src/proxy.docker.conf.json"
             }
           },
           "defaultConfiguration": "development"
