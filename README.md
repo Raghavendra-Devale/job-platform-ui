@@ -79,7 +79,7 @@ src/app/
 
 - **Node.js 18+**
 - **npm 9+**
-- Backend API running on `http://localhost:8080` (see [job-platform-api](../job-platform-api/README.md))
+- Backend API running on `http://localhost:8080` (see [job-platform-api](https://github.com/Raghavendra-Devale/job-platform-api/blob/devale/README.md))
 
 ### 1. Install Dependencies
 
