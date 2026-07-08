@@ -8,7 +8,7 @@ import { Resume } from '../models/resume.models';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
-  private readonly tokenKey = 'jobboard_token';
+  private readonly loggedInKey = 'logged_in';
 
   // ── Signals for Global Application State ─────────────────────────────
   readonly currentUser = signal<User | null>(null);
@@ -21,12 +21,12 @@ export class AuthService {
   }
 
   private initializeAuth(): void {
-    const token = localStorage.getItem(this.tokenKey);
-    if (token) {
+    const isLoggedIn = localStorage.getItem(this.loggedInKey) === 'true';
+    if (isLoggedIn) {
       // Fetch user profile and saved jobs list on startup to maintain session
       this.getProfile().subscribe({
         next: () => this.loadSavedJobIds().subscribe(),
-        error: () => this.logout() // Clear stale local tokens
+        error: () => this.logout() // Clear stale local state if session is expired
       });
     }
   }
@@ -36,7 +36,7 @@ export class AuthService {
   login(credentials: any): Observable<LoginResponse> {
     return this.http.post<LoginResponse>('/api/auth/login', credentials).pipe(
       tap((res) => {
-        localStorage.setItem(this.tokenKey, res.token);
+        localStorage.setItem(this.loggedInKey, 'true');
         this.currentUser.set({
           id: res.id,
           name: res.name,
@@ -56,8 +56,8 @@ export class AuthService {
   }
 
   logout(): Observable<any> {
-    // Clear client-side token store first
-    localStorage.removeItem(this.tokenKey);
+    // Clear client-side state first
+    localStorage.removeItem(this.loggedInKey);
     this.currentUser.set(null);
     this.savedJobIds.set([]);
 
@@ -74,7 +74,7 @@ export class AuthService {
   }
 
   getToken(): string | null {
-    return localStorage.getItem(this.tokenKey);
+    return null;
   }
 
   // ── Resume Management ────────────────────────────────────────────────
