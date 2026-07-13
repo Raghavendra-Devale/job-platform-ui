@@ -15,8 +15,11 @@ export class AuthService {
   // ── Signals for Global Application State ─────────────────────────────
   readonly currentUser = signal<User | null>(null);
   readonly savedJobIds = signal<number[]>([]);
+  readonly resumes = signal<Resume[]>([]);
+  readonly isInitialized = signal<boolean>(false);
 
   readonly isAuthenticated = computed(() => !!this.currentUser());
+  readonly hasResume = computed(() => this.resumes().length > 0);
 
   constructor() {
     this.initializeAuth();
@@ -27,9 +30,21 @@ export class AuthService {
     if (isLoggedIn) {
       // Fetch user profile and saved jobs list on startup to maintain session
       this.getProfile().subscribe({
-        next: () => this.loadSavedJobIds().subscribe(),
-        error: () => this.logout() // Clear stale local state if session is expired
+        next: () => {
+          this.loadSavedJobIds().subscribe({
+            next: () => this.isInitialized.set(true),
+            error: () => this.isInitialized.set(true)
+          });
+        },
+        error: () => {
+          this.logout().subscribe({
+            next: () => this.isInitialized.set(true),
+            error: () => this.isInitialized.set(true)
+          });
+        }
       });
+    } else {
+      this.isInitialized.set(true);
     }
   }
 
@@ -46,9 +61,10 @@ export class AuthService {
           role: res.role,
           createdAt: new Date().toISOString()
         });
-        // Immediately fetch full profile details and saved jobs
+        // Immediately fetch full profile details, saved jobs, and resumes
         this.getProfile().subscribe();
         this.loadSavedJobIds().subscribe();
+        this.loadResumes().subscribe();
       })
     );
   }
@@ -62,6 +78,7 @@ export class AuthService {
     localStorage.removeItem(this.loggedInKey);
     this.currentUser.set(null);
     this.savedJobIds.set([]);
+    this.resumes.set([]);
 
     // Call backend to clear HttpOnly session cookie
     return this.http.post(`${environment.apiUrl}/auth/logout`, {}).pipe(
@@ -77,15 +94,24 @@ export class AuthService {
 
   // ── Resume Management ────────────────────────────────────────────────
 
+  loadResumes(): Observable<Resume[]> {
+    return this.http.get<Resume[]>(`${environment.apiUrl}/users/profile/resumes`).pipe(
+      tap((resumes) => this.resumes.set(resumes))
+    );
+  }
+
   getResumes(): Observable<Resume[]> {
-    return this.http.get<Resume[]>(`${environment.apiUrl}/users/profile/resumes`);
+    return this.loadResumes();
   }
 
   uploadResume(file: File): Observable<any> {
     const formData = new FormData();
     formData.append('file', file);
     return this.http.post<any>(`${environment.apiUrl}/users/profile/resumes`, formData).pipe(
-      tap(() => this.getProfile().subscribe())
+      tap(() => {
+        this.getProfile().subscribe();
+        this.loadResumes().subscribe();
+      })
     );
   }
 
@@ -106,19 +132,28 @@ export class AuthService {
 
   deleteResume(id: number): Observable<any> {
     return this.http.delete<any>(`${environment.apiUrl}/users/profile/resumes/${id}`).pipe(
-      tap(() => this.getProfile().subscribe())
+      tap(() => {
+        this.getProfile().subscribe();
+        this.loadResumes().subscribe();
+      })
     );
   }
 
   activateResume(id: number): Observable<any> {
     return this.http.put<any>(`${environment.apiUrl}/users/profile/resumes/${id}/activate`, {}).pipe(
-      tap(() => this.getProfile().subscribe())
+      tap(() => {
+        this.getProfile().subscribe();
+        this.loadResumes().subscribe();
+      })
     );
   }
 
   renameResume(id: number, resumeName: string): Observable<any> {
     return this.http.put<any>(`${environment.apiUrl}/users/profile/resumes/${id}/rename`, { resumeName }).pipe(
-      tap(() => this.getProfile().subscribe())
+      tap(() => {
+        this.getProfile().subscribe();
+        this.loadResumes().subscribe();
+      })
     );
   }
 

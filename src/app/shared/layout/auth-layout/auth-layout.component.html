@@ -1,0 +1,58 @@
+<div class="auth-layout-container flex w-100">
+  <!-- Left Side: Branding / Illustration Pane -->
+  <div class="auth-branding-panel flex flex-column justify-between p-lg">
+    <div class="brand-logo flex align-center gap-sm">
+      <div class="logo-box flex align-center justify-center">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="7" width="20" height="14" rx="2"/>
+          <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+        </svg>
+      </div>
+      <span class="brand-name">CareerAI</span>
+    </div>
+
+    <div class="branding-content flex flex-column gap-md">
+      <h1 class="branding-title">AI Job Recommendation Platform</h1>
+      <p class="branding-subtitle">Find jobs that actually fit your resume. Powered by AI.</p>
+
+      <!-- Visual abstract mockup using CSS variables -->
+      <div class="branding-visual-card card p-md flex flex-column gap-sm">
+        <div class="flex justify-between align-center">
+          <div class="flex align-center gap-sm">
+            <div class="mock-avatar"></div>
+            <div class="flex flex-column text-left">
+              <span class="mock-name">Software Engineer</span>
+              <span class="mock-desc">Google • Full-time</span>
+            </div>
+          </div>
+          <div class="mock-badge">98% Match</div>
+        </div>
+        <div class="mock-skills flex gap-sm">
+          <span class="mock-skill">Angular</span>
+          <span class="mock-skill">TypeScript</span>
+          <span class="mock-skill">Java</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="branding-footer">
+      <p>© 2026 CareerAI. All rights reserved.</p>
+    </div>
+  </div>
+
+  <!-- Right Side: Authentication Form Wrapper -->
+  <div class="auth-form-panel flex align-center justify-center">
+    <div class="mobile-logo-header flex flex-column align-center gap-xs">
+      <div class="logo-box flex align-center justify-center">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="7" width="20" height="14" rx="2"/>
+          <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+        </svg>
+      </div>
+      <span class="brand-name" style="font-size: var(--text-h3-size); font-weight: 700; color: var(--color-text-primary); margin-top: 4px;">CareerAI</span>
+    </div>
+    <div class="auth-form-card card flex flex-column animate-fade-in-up">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>

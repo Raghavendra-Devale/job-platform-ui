@@ -5,13 +5,23 @@ import { AuthService } from '../../core/services/auth.service';
 import { Resume } from '../../core/models/resume.models';
 import { ToastService } from '../../core/services/toast.service';
 import { ConfirmationModalService } from '../../core/services/confirmation-modal.service';
-import { SkeletonCardComponent } from '../../shared/components/skeleton-card/skeleton-card.component';
+import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
+import { LoadingComponent } from '../../shared/components/loading/loading.component';
+import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
+import { BadgeComponent } from '../../shared/components/badge/badge.component';
 import { LoadingService } from '../../core/services/loading.service';
 
 @Component({
   selector: 'app-resumes',
   standalone: true,
-  imports: [CommonModule, RouterLink, SkeletonCardComponent],
+  imports: [
+    CommonModule, 
+    RouterLink, 
+    PageHeaderComponent, 
+    LoadingComponent, 
+    EmptyStateComponent, 
+    BadgeComponent
+  ],
   templateUrl: './resumes.component.html',
   styleUrls: ['./resumes.component.css'],
 })

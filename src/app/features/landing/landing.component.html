@@ -1,0 +1,200 @@
+<div class="landing-page flex flex-column w-100">
+  <!-- Header Navbar -->
+  <header class="navbar flex justify-between align-center p-md">
+    <div class="container flex justify-between align-center">
+      <div class="brand flex align-center gap-sm">
+        <div class="brand-logo flex align-center justify-center" style="width: 32px; height: 32px; background-color: var(--color-primary-light); color: var(--color-primary); border-radius: var(--radius-md);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="7" width="20" height="14" rx="2"/>
+            <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+          </svg>
+        </div>
+        <span class="brand-name" style="font-size: var(--text-h3-size); font-weight: 700; color: var(--color-text-primary);">CareerAI</span>
+      </div>
+      <nav class="nav-links flex gap-md align-center">
+        <a href="#features">Features</a>
+        <a href="#how-it-works">How It Works</a>
+        @if (authService.isAuthenticated()) {
+          <a routerLink="/dashboard" class="btn btn-primary btn-sm">Dashboard</a>
+        } @else {
+          <a routerLink="/login" class="btn btn-ghost btn-sm">Sign In</a>
+          <a routerLink="/register" class="btn btn-primary btn-sm">Get Started</a>
+        }
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero-section flex align-center justify-center">
+    <div class="container flex flex-column align-center text-center">
+      <div class="hero-tag">Powered by AI</div>
+      <h1 class="hero-title animate-fade-in-up">AI-Powered Job Recommendations</h1>
+      <p class="hero-subtitle animate-fade-in-up stagger-1">
+        Upload your resume. Discover jobs tailored to your skills. Track your applications. Improve your career.
+      </p>
+      <div class="hero-actions flex gap-sm mt-md animate-fade-in-up stagger-2">
+        @if (authService.isAuthenticated()) {
+          <a routerLink="/dashboard" class="btn btn-primary btn-lg">Go to Dashboard</a>
+        } @else {
+          <a routerLink="/register" class="btn btn-primary btn-lg">Get Started</a>
+          <a routerLink="/login" class="btn btn-outline btn-lg">Sign In</a>
+        }
+      </div>
+    </div>
+    <div class="hero-bg-overlay"></div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="features-section">
+    <div class="container">
+      <div class="section-info text-center flex flex-column align-center mb-lg">
+        <h2 class="section-title">Product Features</h2>
+        <p class="section-subtitle">Everything you need to streamline and accelerate your job search</p>
+      </div>
+
+      <div class="features-grid">
+        <!-- Feature 1 -->
+        <div class="feature-card card p-5 flex flex-column gap-sm">
+          <div class="feature-icon-wrapper flex align-center justify-center">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+          </div>
+          <h3 class="feature-card-title">Resume Analysis</h3>
+          <p class="feature-card-description">
+            Upload your resume to extract key skills and professional experience automatically.
+          </p>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="feature-card card p-5 flex flex-column gap-sm">
+          <div class="feature-icon-wrapper flex align-center justify-center">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </div>
+          <h3 class="feature-card-title">Semantic Search</h3>
+          <p class="feature-card-description">
+            Find jobs based on meaning and context, not just exact keyword matches.
+          </p>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="feature-card card p-5 flex flex-column gap-sm">
+          <div class="feature-icon-wrapper flex align-center justify-center">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+          </div>
+          <h3 class="feature-card-title">AI Recommendations</h3>
+          <p class="feature-card-description">
+            Get ranked lists of jobs matched precisely to your background with percent match scores.
+          </p>
+        </div>
+
+        <!-- Feature 4 -->
+        <div class="feature-card card p-5 flex flex-column gap-sm">
+          <div class="feature-icon-wrapper flex align-center justify-center">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+          </div>
+          <h3 class="feature-card-title">Application Tracking</h3>
+          <p class="feature-card-description">
+            Keep track of your saved jobs, ongoing applications, and their statuses in a single unified dashboard.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works Section -->
+  <section id="how-it-works" class="how-it-works-section">
+    <div class="container">
+      <div class="section-info text-center flex flex-column align-center mb-lg">
+        <h2 class="section-title">How It Works</h2>
+        <p class="section-subtitle">Get matching jobs in four simple steps</p>
+      </div>
+
+      <div class="timeline flex w-100 justify-between align-center">
+        <!-- Step 1 -->
+        <div class="timeline-step flex flex-column align-center text-center gap-sm">
+          <div class="step-num flex align-center justify-center">1</div>
+          <h4 class="step-title">Upload Resume</h4>
+          <p class="step-desc">Drop your PDF or Docx resume in the platform.</p>
+        </div>
+        <!-- Arrow -->
+        <div class="timeline-arrow">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </div>
+        <!-- Step 2 -->
+        <div class="timeline-step flex flex-column align-center text-center gap-sm">
+          <div class="step-num flex align-center justify-center">2</div>
+          <h4 class="step-title">AI Analysis</h4>
+          <p class="step-desc">Our model extracts skills, roles, and experience.</p>
+        </div>
+        <!-- Arrow -->
+        <div class="timeline-arrow">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </div>
+        <!-- Step 3 -->
+        <div class="timeline-step flex flex-column align-center text-center gap-sm">
+          <div class="step-num flex align-center justify-center">3</div>
+          <h4 class="step-title">Match Engine</h4>
+          <p class="step-desc">AI scores your alignment across active listings.</p>
+        </div>
+        <!-- Arrow -->
+        <div class="timeline-arrow">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <line x1="5" y1="12" x2="19" y2="12"/>
+            <polyline points="12 5 19 12 12 19"/>
+          </svg>
+        </div>
+        <!-- Step 4 -->
+        <div class="timeline-step flex flex-column align-center text-center gap-sm">
+          <div class="step-num flex align-center justify-center">4</div>
+          <h4 class="step-title">Apply & Track</h4>
+          <p class="step-desc">Apply instantly and track status updates.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta-section flex flex-column align-center justify-center text-center">
+    <div class="container flex flex-column align-center gap-md">
+      <h2 class="cta-title">Ready to find your next opportunity?</h2>
+      <p class="cta-desc">Join thousands of professionals finding work using AI matching.</p>
+      @if (authService.isAuthenticated()) {
+        <a routerLink="/dashboard" class="btn btn-primary btn-lg mt-md">Go to Dashboard</a>
+      } @else {
+        <a routerLink="/register" class="btn btn-primary btn-lg mt-md">Get Started</a>
+      }
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer p-lg">
+    <div class="container flex justify-between align-center">
+      <span class="footer-copy">© 2026 CareerAI. All rights reserved.</span>
+      <div class="footer-links flex gap-md">
+        <a routerLink="/jobs">Browse Jobs</a>
+        <a routerLink="/login">Sign In</a>
+        <a routerLink="/register">Register</a>
+      </div>
+    </div>
+  </footer>
+</div>

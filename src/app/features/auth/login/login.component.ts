@@ -16,17 +16,15 @@ export class LoginComponent {
   private readonly router = inject(Router);
   private readonly authService = inject(AuthService);
 
-  // Dynamic feedback and loading states
   loading = false;
   errorMessage: string | null = null;
   successMessage: string | null = null;
 
   loginForm: FormGroup = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(6)]]
+    password: ['', [Validators.required]]
   });
 
-  // Helper getters for easy template validation access
   get email() {
     return this.loginForm.get('email');
   }
@@ -49,15 +47,19 @@ export class LoginComponent {
 
     this.authService.login({ email, password }).subscribe({
       next: () => {
-        this.loading = false;
-        this.successMessage = 'Login successful! Redirecting...';
+        this.successMessage = 'Signing you in...';
         setTimeout(() => {
-          this.router.navigate(['/jobs']);
-        }, 1000);
+          this.loading = false;
+          this.router.navigate(['/dashboard']);
+        }, 1200);
       },
       error: (err) => {
         this.loading = false;
-        this.errorMessage = err.error?.error || 'Invalid credentials or service unavailable.';
+        if (err.status === 0 || err.status === 502 || err.status === 503 || err.status === 504) {
+          this.errorMessage = "We're having trouble connecting. Please try again shortly.";
+        } else {
+          this.errorMessage = 'Incorrect email or password.';
+        }
       }
     });
   }

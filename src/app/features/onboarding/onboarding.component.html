@@ -1,0 +1,161 @@
+<div class="onboarding-container flex align-center justify-center">
+  <div class="onboarding-card card animate-fade-in-up">
+    
+    <!-- Phase 1: NOT_UPLOADED - Initial State -->
+    @if (status().processingStatus === 'NOT_UPLOADED') {
+      <div class="onboarding-welcome text-center">
+        <h2 style="font-size: var(--text-display-size); font-weight: 800; color: var(--color-text-primary); margin-bottom: var(--space-2);">Welcome to CareerAI 👋</h2>
+        <p style="font-size: var(--text-body-large-size); color: var(--color-text-secondary); max-width: 500px; margin: 0 auto var(--space-8) auto;">
+          Let's start by uploading your resume. This helps us understand your skills and find personalized job recommendations.
+        </p>
+
+        <!-- Drag & Drop Uploader -->
+        <div 
+          class="drag-drop-zone flex flex-column align-center justify-center"
+          [class.drag-over]="isDragOver()"
+          (dragover)="onDragOver($event)"
+          (dragleave)="onDragLeave($event)"
+          (drop)="onDrop($event)"
+          (click)="fileInput.click()"
+        >
+          <input 
+            type="file" 
+            #fileInput 
+            (change)="onFileSelected($event)" 
+            accept=".pdf,.doc,.docx" 
+            style="display: none;" 
+          />
+          
+          <div class="upload-icon-container flex align-center justify-center mb-md">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+          </div>
+          
+          <h4 style="font-size: var(--text-base); font-weight: 600; color: var(--color-text-primary); margin: 0 0 var(--space-1) 0;">
+            Drag & drop your resume file here
+          </h4>
+          <p style="font-size: var(--text-xs); color: var(--color-text-secondary); margin: 0;">
+            Supports PDF, DOC, or DOCX up to 5MB
+          </p>
+          
+          <button class="btn btn-outline mt-md" style="margin-top: var(--space-4);">Select File</button>
+        </div>
+      </div>
+    }
+
+    <!-- Phase 2: UPLOADING or PROCESSING - Timeline State -->
+    @if (status().processingStatus === 'UPLOADING' || status().processingStatus === 'PROCESSING') {
+      <div class="onboarding-processing text-center flex flex-column align-center">
+        <h2 style="font-size: var(--text-h2-size); font-weight: 700; color: var(--color-text-primary); margin-bottom: var(--space-2);">
+          @if (status().processingStatus === 'UPLOADING') { Uploading Resume... } @else { Analyzing Resume... }
+        </h2>
+        <p style="font-size: var(--text-caption-size); color: var(--color-text-secondary); margin-bottom: var(--space-6);">
+          Our AI engines are extracting skills and building your match profile.
+        </p>
+
+        <!-- AI Processing Timeline -->
+        <div class="timeline-vertical flex flex-column gap-md w-100 mt-md">
+          @for (step of timelineSteps(); track step.id) {
+            <div class="timeline-item flex align-center gap-md" [class.completed]="step.status === 'completed'" [class.processing]="step.status === 'processing'">
+              <div class="step-indicator flex align-center justify-center">
+                @if (step.status === 'completed') {
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                } @else if (step.status === 'processing') {
+                  <span class="spinner-small"></span>
+                }
+              </div>
+              <span class="step-label">{{ step.label }}</span>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Phase 3, 4, 5, 6: READY - Completed State -->
+    @if (status().processingStatus === 'READY') {
+      <div class="onboarding-ready flex flex-column">
+        <div class="ready-header text-center mb-lg" style="margin-bottom: var(--space-6);">
+          <div class="success-check-badge flex align-center justify-center mb-md" style="margin: 0 auto var(--space-3) auto;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </div>
+          <h2 style="font-size: var(--text-display-size); font-weight: 800; color: var(--color-text-primary); margin: 0 0 var(--space-1) 0;">Resume Ready ✓</h2>
+          <p style="font-size: var(--text-caption-size); color: var(--color-text-secondary); margin: 0;">AI profile successfully generated.</p>
+        </div>
+
+        <div class="results-grid flex flex-column gap-md">
+          <!-- Summary Details -->
+          <div class="summary-section p-md card flex justify-between align-center" style="background-color: var(--color-surface-alt); padding: var(--space-4); border-color: var(--color-border-light);">
+            <div class="summary-details flex flex-column gap-xs text-left" style="gap: var(--space-1);">
+              <h4 style="font-size: var(--text-base); font-weight: 700; color: var(--color-text-primary); margin: 0;">
+                {{ status().summary?.candidateName }}
+              </h4>
+              <p style="font-size: var(--text-xs); color: var(--color-text-secondary); margin: 0;">
+                <strong>Role:</strong> {{ status().summary?.role }}
+              </p>
+              <p style="font-size: var(--text-xs); color: var(--color-text-secondary); margin: 0;">
+                <strong>Experience:</strong> {{ status().summary?.experience }}
+              </p>
+            </div>
+            
+            <!-- Resume Score (Phase 5) -->
+            @if (status().summary?.score) {
+              <div class="score-pill flex flex-column align-center justify-center">
+                <span class="score-num">{{ status().summary?.score }}%</span>
+                <span class="score-lbl">AI Profile Score</span>
+              </div>
+            }
+          </div>
+
+          <!-- Parsed Skills List (Phase 4) -->
+          <div class="skills-section text-left" style="margin-top: var(--space-2);">
+            <h4 style="font-size: var(--text-xs); font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; margin-bottom: var(--space-2);">Parsed Skills</h4>
+            <div class="skills-list flex wrap gap-sm">
+              @for (skill of status().parsedSkills; track skill.name) {
+                <app-chip [label]="skill.name" [active]="true"></app-chip>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Recommendations CTA (Phase 6) -->
+        <div class="ready-actions mt-lg" style="margin-top: var(--space-8);">
+          <button 
+            class="btn btn-primary w-100 flex align-center justify-center" 
+            style="height: 44px; font-weight: 600;" 
+            (click)="finishOnboarding()"
+          >
+            Generate Personalized Recommendations
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- FAILED State -->
+    @if (status().processingStatus === 'FAILED') {
+      <div class="onboarding-failed text-center flex flex-column align-center">
+        <div class="failed-icon flex align-center justify-center mb-md" style="width: 56px; height: 56px; background-color: var(--color-error-light); color: var(--color-error); border-radius: var(--radius-full); margin-bottom: var(--space-4);">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+        </div>
+        <h3 style="font-size: var(--text-h3-size); font-weight: 700; color: var(--color-text-primary); margin-bottom: var(--space-1);">Upload Failed</h3>
+        <p style="font-size: var(--text-caption-size); color: var(--color-text-secondary); margin-bottom: var(--space-6);">
+          We were unable to parse your resume. Please check the file and try again.
+        </p>
+        <button class="btn btn-primary" (click)="status.set({ hasResume: false, processingStatus: 'NOT_UPLOADED', parsedSkills: [] })">
+          Try Again
+        </button>
+      </div>
+    }
+
+  </div>
+</div>

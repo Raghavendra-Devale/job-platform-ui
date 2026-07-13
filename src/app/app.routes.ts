@@ -1,11 +1,37 @@
 import { Routes } from '@angular/router';
 import { authGuard, guestGuard, adminGuard } from './core/guards/auth.guard';
+import { AuthLayoutComponent } from './shared/layout/auth-layout/auth-layout.component';
 
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'jobs',
     pathMatch: 'full',
+    loadComponent: () =>
+      import('./features/landing/landing.component').then((m) => m.LandingComponent),
+  },
+  {
+    path: '',
+    component: AuthLayoutComponent,
+    canActivate: [guestGuard],
+    children: [
+      {
+        path: 'login',
+        loadComponent: () =>
+          import('./features/auth/login/login.component').then((m) => m.LoginComponent),
+      },
+      {
+        path: 'register',
+        loadComponent: () =>
+          import('./features/auth/register/register.component').then((m) => m.RegisterComponent),
+      },
+      {
+        path: 'forgot-password',
+        loadComponent: () =>
+          import('./features/auth/forgot-password/forgot-password.component').then(
+            (m) => m.ForgotPasswordComponent
+          ),
+      },
+    ],
   },
   {
     path: 'jobs',
@@ -20,22 +46,16 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'login',
-    canActivate: [guestGuard],
-    loadComponent: () =>
-      import('./features/auth/login/login.component').then((m) => m.LoginComponent),
-  },
-  {
-    path: 'register',
-    canActivate: [guestGuard],
-    loadComponent: () =>
-      import('./features/auth/register/register.component').then((m) => m.RegisterComponent),
-  },
-  {
     path: 'profile',
     canActivate: [authGuard],
     loadComponent: () =>
       import('./features/profile/profile.component').then((m) => m.UserProfileComponent),
+  },
+  {
+    path: 'onboarding',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/onboarding/onboarding.component').then((m) => m.OnboardingComponent),
   },
   {
     path: 'dashboard',
@@ -81,9 +101,8 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/admin/admin.component').then((m) => m.AdminComponent),
   },
-
   {
     path: '**',
-    redirectTo: 'jobs',
+    redirectTo: '',
   },
 ];
