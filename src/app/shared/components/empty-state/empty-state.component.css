@@ -1,0 +1,12 @@
+.empty-icon-container {
+  width: 80px;
+  height: 80px;
+  background-color: var(--color-surface-alt);
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-4);
+  opacity: 0.8;
+}

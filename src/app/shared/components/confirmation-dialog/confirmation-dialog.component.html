@@ -1,0 +1,30 @@
+<div class="modal-overlay" *ngIf="modalService.config() as cfg" (click)="modalService.handleCancel()">
+  <div class="modal-box card animate-fade-in-up" (click)="$event.stopPropagation()">
+    <div class="modal-header flex align-center gap-sm">
+      <div class="modal-icon flex align-center justify-center" [class.danger-icon]="cfg.danger">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+      </div>
+      <h3 class="modal-title">{{ cfg.title }}</h3>
+    </div>
+
+    <div class="modal-body mb-lg">
+      <p class="modal-message">{{ cfg.message }}</p>
+    </div>
+
+    <div class="modal-actions flex gap-sm">
+      <button class="btn btn-outline" (click)="modalService.handleCancel()">
+        {{ cfg.cancelText }}
+      </button>
+      <button
+        [class]="cfg.danger ? 'btn btn-danger' : 'btn btn-primary'"
+        (click)="modalService.handleConfirm()"
+      >
+        {{ cfg.confirmText }}
+      </button>
+    </div>
+  </div>
+</div>

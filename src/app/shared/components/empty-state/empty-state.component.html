@@ -1,0 +1,33 @@
+<div class="empty-state card text-center" style="padding: var(--space-10) var(--space-6); display: flex; flex-direction: column; align-items: center;">
+  <div class="empty-icon-container flex align-center justify-center mb-md">
+    @switch (icon) {
+      @case ('search') {
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+      }
+      @case ('bookmark') {
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+        </svg>
+      }
+      @case ('briefcase') {
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+          <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+        </svg>
+      }
+      @default {
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+        </svg>
+      }
+    }
+  </div>
+  <h3 class="empty-title" style="font-size: var(--text-h3-size); font-weight: var(--text-h3-weight); color: var(--color-text-primary); margin: 0 0 var(--space-2) 0;">{{ title }}</h3>
+  <p class="empty-description" style="font-size: var(--text-caption-size); color: var(--color-text-secondary); max-width: 420px; margin: 0 0 var(--space-4) 0;">{{ description }}</p>
+  @if (actionText) {
+    <button class="btn btn-primary" (click)="onAction()">{{ actionText }}</button>
+  }
+</div>

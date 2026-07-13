@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
@@ -11,6 +11,7 @@ import { RecommendationService } from '../../core/services/recommendation.servic
 import { JobRecommendation } from '../../core/models/recommendation.models';
 import { RecommendationCardComponent } from '../../shared/components/recommendation-card/recommendation-card.component';
 import { ConfirmationModalService } from '../../core/services/confirmation-modal.service';
+import { LoadingService } from '../../core/services/loading.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -25,11 +26,12 @@ export class DashboardComponent implements OnInit {
   private readonly toastService = inject(ToastService);
   private readonly recService = inject(RecommendationService);
   private readonly confirmService = inject(ConfirmationModalService);
+  private readonly loadingService = inject(LoadingService);
 
   summary = signal<DashboardSummary | null>(null);
   applications = signal<JobApplication[]>([]);
-  loadingSummary = signal(true);
-  loadingApps = signal(true);
+  loadingSummary = computed(() => this.loadingService.isLoading() && !this.summary());
+  loadingApps = computed(() => this.loadingService.isLoading() && this.applications().length === 0);
 
   recentJobs = signal<JobListResponse[]>([]);
   savedJobs  = signal<JobListResponse[]>([]);
@@ -43,27 +45,21 @@ export class DashboardComponent implements OnInit {
   }
 
   loadData(): void {
-    this.loadingSummary.set(true);
     this.dashboardService.getSummary().subscribe({
       next: (data) => {
         this.summary.set(data);
-        this.loadingSummary.set(false);
       },
       error: (err) => {
         console.error('Failed to load dashboard summary', err);
-        this.loadingSummary.set(false);
       }
     });
 
-    this.loadingApps.set(true);
     this.dashboardService.getApplications().subscribe({
       next: (data) => {
         this.applications.set(data);
-        this.loadingApps.set(false);
       },
       error: (err) => {
         console.error('Failed to load job applications', err);
-        this.loadingApps.set(false);
       }
     });
 

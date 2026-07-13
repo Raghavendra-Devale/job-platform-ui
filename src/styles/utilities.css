@@ -1,0 +1,15 @@
+/* Layout & Alignment Utilities */
+.flex            { display: flex !important; }
+.flex-column     { display: flex !important; flex-direction: column !important; }
+.justify-between { justify-content: space-between !important; }
+.align-center    { align-items: center !important; }
+.text-center     { text-align: center !important; }
+.w-100           { width: 100% !important; }
+
+/* Gaps */
+.gap-sm          { gap: var(--space-2) !important; }
+.gap-md          { gap: var(--space-4) !important; }
+
+/* Spacers */
+.mt-md           { margin-top: var(--space-4) !important; }
+.mb-lg           { margin-bottom: var(--space-6) !important; }

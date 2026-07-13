@@ -1,9 +1,11 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { Observable, tap, catchError, of, throwError } from 'rxjs';
 import { User, LoginResponse } from '../models/auth.models';
 import { JobListResponse } from '../models/job.models';
 import { Resume } from '../models/resume.models';
+import { BYPASS_LOADING } from '../interceptors/loading.interceptor';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -34,7 +36,7 @@ export class AuthService {
   // ── Core Authentication API ──────────────────────────────────────────
 
   login(credentials: any): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>('/api/auth/login', credentials).pipe(
+    return this.http.post<LoginResponse>(`${environment.apiUrl}/auth/login`, credentials).pipe(
       tap((res) => {
         localStorage.setItem(this.loggedInKey, 'true');
         this.currentUser.set({
@@ -52,7 +54,7 @@ export class AuthService {
   }
 
   register(userData: any): Observable<any> {
-    return this.http.post('/api/auth/register', userData);
+    return this.http.post(`${environment.apiUrl}/auth/register`, userData);
   }
 
   logout(): Observable<any> {
@@ -62,37 +64,33 @@ export class AuthService {
     this.savedJobIds.set([]);
 
     // Call backend to clear HttpOnly session cookie
-    return this.http.post('/api/auth/logout', {}).pipe(
+    return this.http.post(`${environment.apiUrl}/auth/logout`, {}).pipe(
       catchError(() => of(null)) // Graceful fallback
     );
   }
 
   getProfile(): Observable<User> {
-    return this.http.get<User>('/api/users/profile').pipe(
+    return this.http.get<User>(`${environment.apiUrl}/users/profile`).pipe(
       tap((user) => this.currentUser.set(user))
     );
-  }
-
-  getToken(): string | null {
-    return null;
   }
 
   // ── Resume Management ────────────────────────────────────────────────
 
   getResumes(): Observable<Resume[]> {
-    return this.http.get<Resume[]>('/api/users/profile/resumes');
+    return this.http.get<Resume[]>(`${environment.apiUrl}/users/profile/resumes`);
   }
 
   uploadResume(file: File): Observable<any> {
     const formData = new FormData();
     formData.append('file', file);
-    return this.http.post<any>('/api/users/profile/resumes', formData).pipe(
+    return this.http.post<any>(`${environment.apiUrl}/users/profile/resumes`, formData).pipe(
       tap(() => this.getProfile().subscribe())
     );
   }
 
   downloadResume(id: number, fileName: string): void {
-    this.http.get(`/api/users/profile/resumes/${id}/download`, { responseType: 'blob' })
+    this.http.get(`${environment.apiUrl}/users/profile/resumes/${id}/download`, { responseType: 'blob' })
       .subscribe({
         next: (blob) => {
           const url = window.URL.createObjectURL(blob);
@@ -107,19 +105,19 @@ export class AuthService {
   }
 
   deleteResume(id: number): Observable<any> {
-    return this.http.delete<any>(`/api/users/profile/resumes/${id}`).pipe(
+    return this.http.delete<any>(`${environment.apiUrl}/users/profile/resumes/${id}`).pipe(
       tap(() => this.getProfile().subscribe())
     );
   }
 
   activateResume(id: number): Observable<any> {
-    return this.http.put<any>(`/api/users/profile/resumes/${id}/activate`, {}).pipe(
+    return this.http.put<any>(`${environment.apiUrl}/users/profile/resumes/${id}/activate`, {}).pipe(
       tap(() => this.getProfile().subscribe())
     );
   }
 
   renameResume(id: number, resumeName: string): Observable<any> {
-    return this.http.put<any>(`/api/users/profile/resumes/${id}/rename`, { resumeName }).pipe(
+    return this.http.put<any>(`${environment.apiUrl}/users/profile/resumes/${id}/rename`, { resumeName }).pipe(
       tap(() => this.getProfile().subscribe())
     );
   }
@@ -138,7 +136,7 @@ export class AuthService {
     phone?: string;
     location?: string;
   }): Observable<any> {
-    return this.http.put<any>('/api/users/profile', data).pipe(
+    return this.http.put<any>(`${environment.apiUrl}/users/profile`, data).pipe(
       tap(() => {
         const user = this.currentUser();
         if (user) {
@@ -153,7 +151,7 @@ export class AuthService {
   }
 
   changePassword(data: any): Observable<any> {
-    return this.http.post<any>('/api/users/profile/change-password', data);
+    return this.http.post<any>(`${environment.apiUrl}/users/profile/change-password`, data);
   }
 
   updatePreferences(data: {
@@ -165,7 +163,7 @@ export class AuthService {
     salaryRange?: string;
     jobTypes?: string;
   }): Observable<any> {
-    return this.http.put<any>('/api/users/profile/preferences', data).pipe(
+    return this.http.put<any>(`${environment.apiUrl}/users/profile/preferences`, data).pipe(
       tap(() => {
         const user = this.currentUser();
         if (user) {
@@ -182,18 +180,22 @@ export class AuthService {
 
   loadSavedJobIds(): Observable<number[]> {
     if (!this.isAuthenticated()) return of([]);
-    return this.http.get<number[]>('/api/jobs/saved/ids').pipe(
+    return this.http.get<number[]>(`${environment.apiUrl}/jobs/saved/ids`, {
+      context: new HttpContext().set(BYPASS_LOADING, true)
+    }).pipe(
       tap((ids) => this.savedJobIds.set(ids)),
       catchError(() => of([]))
     );
   }
 
   getSavedJobs(): Observable<JobListResponse[]> {
-    return this.http.get<JobListResponse[]>('/api/jobs/saved');
+    return this.http.get<JobListResponse[]>(`${environment.apiUrl}/jobs/saved`);
   }
 
   saveJob(jobId: number): Observable<any> {
-    return this.http.post(`/api/jobs/${jobId}/save`, {}).pipe(
+    return this.http.post(`${environment.apiUrl}/jobs/${jobId}/save`, {}, {
+      context: new HttpContext().set(BYPASS_LOADING, true)
+    }).pipe(
       tap(() => {
         const currentIds = this.savedJobIds();
         if (!currentIds.includes(jobId)) {
@@ -204,7 +206,9 @@ export class AuthService {
   }
 
   unsaveJob(jobId: number): Observable<any> {
-    return this.http.delete(`/api/jobs/${jobId}/save`).pipe(
+    return this.http.delete(`${environment.apiUrl}/jobs/${jobId}/save`, {
+      context: new HttpContext().set(BYPASS_LOADING, true)
+    }).pipe(
       tap(() => {
         this.savedJobIds.set(this.savedJobIds().filter(id => id !== jobId));
       })
@@ -218,11 +222,15 @@ export class AuthService {
   // ── Recently Viewed Jobs ─────────────────────────────────────────────
 
   getRecentJobs(): Observable<JobListResponse[]> {
-    return this.http.get<JobListResponse[]>('/api/jobs/recent');
+    return this.http.get<JobListResponse[]>(`${environment.apiUrl}/jobs/recent`, {
+      context: new HttpContext().set(BYPASS_LOADING, true)
+    });
   }
 
   viewJob(jobId: number): Observable<any> {
     if (!this.isAuthenticated()) return of(null);
-    return this.http.post(`/api/jobs/${jobId}/view`, {});
+    return this.http.post(`${environment.apiUrl}/jobs/${jobId}/view`, {}, {
+      context: new HttpContext().set(BYPASS_LOADING, true)
+    });
   }
 }

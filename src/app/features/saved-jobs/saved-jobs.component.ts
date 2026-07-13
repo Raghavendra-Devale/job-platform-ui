@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
@@ -6,6 +6,7 @@ import { JobListResponse } from '../../core/models/job.models';
 import { DashboardService } from '../../core/services/dashboard.service';
 import { ToastService } from '../../core/services/toast.service';
 import { SkeletonCardComponent } from '../../shared/components/skeleton-card/skeleton-card.component';
+import { LoadingService } from '../../core/services/loading.service';
 
 @Component({
   selector: 'app-saved-jobs',
@@ -18,9 +19,10 @@ export class SavedJobsComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly dashboardService = inject(DashboardService);
   private readonly toastService = inject(ToastService);
+  private readonly loadingService = inject(LoadingService);
 
   jobs    = signal<JobListResponse[]>([]);
-  loading = signal(true);
+  loading = computed(() => this.loadingService.isLoading() && this.jobs().length === 0);
   error   = signal<string | null>(null);
 
   ngOnInit(): void {
@@ -31,12 +33,10 @@ export class SavedJobsComponent implements OnInit {
     this.authService.getSavedJobs().subscribe({
       next: (jobs) => {
         this.jobs.set(jobs);
-        this.loading.set(false);
       },
       error: (err) => {
         console.error('Failed to load saved jobs', err);
         this.error.set('Failed to retrieve bookmarked jobs. Service is currently unavailable.');
-        this.loading.set(false);
       }
     });
   }

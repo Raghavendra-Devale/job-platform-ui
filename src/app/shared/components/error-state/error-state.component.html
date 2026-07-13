@@ -1,0 +1,14 @@
+<div class="error-state card text-center" role="alert" style="padding: var(--space-8) var(--space-6); display: flex; flex-direction: column; align-items: center;">
+  <div class="error-icon-container flex align-center justify-center mb-md">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"></circle>
+      <line x1="12" y1="8" x2="12" y2="12"></line>
+      <line x1="12" y1="16" x2="12.01" y2="16"></line>
+    </svg>
+  </div>
+  <h3 class="error-title" style="font-size: var(--text-h3-size); font-weight: var(--text-h3-weight); color: var(--color-text-primary); margin: 0 0 var(--space-2) 0;">Something Went Wrong</h3>
+  <p class="error-description" style="font-size: var(--text-caption-size); color: var(--color-text-secondary); max-width: 400px; margin: 0 0 var(--space-4) 0;">{{ message }}</p>
+  @if (actionText) {
+    <button class="btn btn-outline" (click)="onAction()">{{ actionText }}</button>
+  }
+</div>

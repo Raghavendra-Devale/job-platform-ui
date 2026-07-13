@@ -9,6 +9,7 @@ import { JobService } from '../../core/services/job.service';
 import { JobListResponse, JobSearchResponse, Page } from '../../core/models/job.models';
 import { AuthService } from '../../core/services/auth.service';
 import { DashboardService } from '../../core/services/dashboard.service';
+import { LoadingService } from '../../core/services/loading.service';
 
 @Component({
   selector: 'app-jobs',
@@ -23,6 +24,7 @@ export class JobsComponent implements OnInit, OnDestroy {
   readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly dashboardService = inject(DashboardService);
+  private readonly loadingService = inject(LoadingService);
   private readonly destroy$ = new Subject<void>();
 
   readonly Math = Math;
@@ -34,7 +36,7 @@ export class JobsComponent implements OnInit, OnDestroy {
   totalPages  = signal(0);
   currentPage = signal(0);
   pageSize    = 10;
-  loading     = signal(false);
+  loading     = computed(() => this.loadingService.isLoading() && this.jobs().length === 0);
   error       = signal<string | null>(null);
 
   recentJobs  = signal<JobListResponse[]>([]);
@@ -129,7 +131,6 @@ export class JobsComponent implements OnInit, OnDestroy {
 
   // ── Search / Load ────────────────────────────────────────────────────
   search(): void {
-    this.loading.set(true);
     this.error.set(null);
 
     const { keyword, location, provider, remote, sortBy, experience, jobType, company } = this.filterForm.value;
@@ -147,11 +148,9 @@ export class JobsComponent implements OnInit, OnDestroy {
             this.jobs.set(res.content);
             this.totalElements.set(res.totalElements);
             this.totalPages.set(res.totalPages);
-            this.loading.set(false);
           },
           error: () => {
             this.error.set('Could not load jobs. Is the backend running?');
-            this.loading.set(false);
           }
         });
       return;
@@ -175,11 +174,9 @@ export class JobsComponent implements OnInit, OnDestroy {
         this.filters.set(res.filters || {});
         this.totalElements.set(res.totalElements);
         this.totalPages.set(res.totalPages);
-        this.loading.set(false);
       },
       error: () => {
         this.error.set('Search failed. Please try again.');
-        this.loading.set(false);
       }
     });
   }

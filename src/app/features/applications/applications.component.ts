@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { DashboardService } from '../../core/services/dashboard.service';
@@ -6,6 +6,7 @@ import { JobApplication } from '../../core/models/dashboard.models';
 import { ToastService } from '../../core/services/toast.service';
 import { ConfirmationModalService } from '../../core/services/confirmation-modal.service';
 import { SkeletonCardComponent } from '../../shared/components/skeleton-card/skeleton-card.component';
+import { LoadingService } from '../../core/services/loading.service';
 
 type KanbanStatus = 'APPLIED' | 'SCREENING' | 'INTERVIEW' | 'OFFER' | 'REJECTED';
 
@@ -29,9 +30,10 @@ export class ApplicationsComponent implements OnInit {
   private readonly dashboardService = inject(DashboardService);
   private readonly toastService = inject(ToastService);
   private readonly confirmationService = inject(ConfirmationModalService);
+  private readonly loadingService = inject(LoadingService);
 
   applications = signal<JobApplication[]>([]);
-  loading = signal(true);
+  loading = computed(() => this.loadingService.isLoading() && this.applications().length === 0);
   updatingId = signal<number | null>(null);
   draggingApp = signal<JobApplication | null>(null);
   dragOverColumn = signal<KanbanStatus | null>(null);
@@ -51,13 +53,11 @@ export class ApplicationsComponent implements OnInit {
   }
 
   loadApplications(): void {
-    this.loading.set(true);
     this.dashboardService.getApplications().subscribe({
       next: (data) => {
         this.applications.set(data);
-        this.loading.set(false);
       },
-      error: () => this.loading.set(false),
+      error: () => {},
     });
   }
 

@@ -10,6 +10,7 @@ import {
   ProviderHealthMap,
   Page,
 } from '../models/job.models';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class JobService {
@@ -20,12 +21,12 @@ export class JobService {
     const params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString());
-    return this.http.get<Page<JobListResponse>>('/api/jobs', { params });
+    return this.http.get<Page<JobListResponse>>(`${environment.apiUrl}/jobs`, { params });
   }
 
   // GET /api/jobs/:id — single job detail
   getJobById(id: number): Observable<JobResponse> {
-    return this.http.get<JobResponse>(`/api/jobs/${id}`);
+    return this.http.get<JobResponse>(`${environment.apiUrl}/jobs/${id}`);
   }
 
   // GET /api/jobs/search — weighted ranked search with filters
@@ -44,22 +45,22 @@ export class JobService {
     if (request.experience)     params = params.set('experience', request.experience);
     if (request.jobType)        params = params.set('jobType', request.jobType);
     if (request.company)        params = params.set('company', request.company);
-    return this.http.get<JobSearchResponse>('/api/jobs/search', { params });
+    return this.http.get<JobSearchResponse>(`${environment.apiUrl}/jobs/search`, { params });
   }
 
   // POST /api/jobs/sync — manual sync trigger
   syncJobs(): Observable<SyncSummaryResponse> {
-    return this.http.post<SyncSummaryResponse>('/api/jobs/sync', {});
+    return this.http.post<SyncSummaryResponse>(`${environment.apiUrl}/jobs/sync`, {});
   }
 
   // GET /api/providers/health — health status per provider
   getProviderHealth(): Observable<ProviderHealthMap> {
-    return this.http.get<ProviderHealthMap>('/api/providers/health');
+    return this.http.get<ProviderHealthMap>(`${environment.apiUrl}/providers/health`);
   }
 
   // GET /api/providers/search — live external API search
   searchExternal(keyword: string): Observable<JobResponse[]> {
     const params = new HttpParams().set('keyword', keyword);
-    return this.http.get<JobResponse[]>('/api/providers/search', { params });
+    return this.http.get<JobResponse[]>(`${environment.apiUrl}/providers/search`, { params });
   }
 }

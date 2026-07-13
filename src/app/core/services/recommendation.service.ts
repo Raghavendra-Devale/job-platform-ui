@@ -3,13 +3,14 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { JobRecommendation } from '../models/recommendation.models';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class RecommendationService {
   private readonly http = inject(HttpClient);
 
   getRecommendations(): Observable<JobRecommendation[]> {
-    return this.http.post<{ recommendations: any[] }>('/api/recommendations', {}).pipe(
+    return this.http.post<{ recommendations: any[] }>(`${environment.apiUrl}/recommendations`, {}).pipe(
       map(response => {
         return (response.recommendations || []).map((item, index) => ({
           id: index + 1,

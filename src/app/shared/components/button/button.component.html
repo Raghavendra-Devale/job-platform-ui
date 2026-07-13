@@ -1,0 +1,13 @@
+<button
+  [type]="type"
+  [disabled]="disabled || loading"
+  [class]="'btn btn-' + variant + ' ' + (size !== 'md' ? 'btn-' + size : '') + ' ' + customClass"
+  [class.loading]="loading"
+  (click)="onClick($event)"
+  style="display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);"
+>
+  @if (loading) {
+    <span class="spinner" style="width: 14px; height: 14px; border: 2px solid currentColor; border-top-color: transparent; border-radius: var(--radius-full); display: inline-block; animation: spin 1s linear infinite;"></span>
+  }
+  <ng-content></ng-content>
+</button>

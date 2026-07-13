@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
@@ -6,6 +6,7 @@ import { Resume } from '../../core/models/resume.models';
 import { ToastService } from '../../core/services/toast.service';
 import { ConfirmationModalService } from '../../core/services/confirmation-modal.service';
 import { SkeletonCardComponent } from '../../shared/components/skeleton-card/skeleton-card.component';
+import { LoadingService } from '../../core/services/loading.service';
 
 @Component({
   selector: 'app-resumes',
@@ -18,9 +19,10 @@ export class ResumesComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly toastService = inject(ToastService);
   private readonly confirmationService = inject(ConfirmationModalService);
+  private readonly loadingService = inject(LoadingService);
 
   resumes = signal<Resume[]>([]);
-  loading = signal(true);
+  loading = computed(() => this.loadingService.isLoading() && this.resumes().length === 0);
   error   = signal<string | null>(null);
 
   isDragOver = signal(false);
@@ -45,12 +47,10 @@ export class ResumesComponent implements OnInit {
     this.authService.getResumes().subscribe({
       next: (data) => {
         this.resumes.set(data);
-        this.loading.set(false);
       },
       error: (err) => {
         console.error('Failed to load resumes', err);
         this.error.set('Failed to fetch your resumes. Please try again.');
-        this.loading.set(false);
       }
     });
   }
@@ -108,7 +108,6 @@ export class ResumesComponent implements OnInit {
         this.toastService.showSuccess('Resume deleted successfully');
         // If the deleted resume was active, reload list because backend auto-activated another
         if (resume.isActive) {
-          this.loading.set(true);
           this.loadResumes();
         }
       },

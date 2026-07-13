@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { RecommendationService } from '../../core/services/recommendation.service';
@@ -8,6 +8,7 @@ import { DashboardService } from '../../core/services/dashboard.service';
 import { ToastService } from '../../core/services/toast.service';
 import { SkeletonCardComponent } from '../../shared/components/skeleton-card/skeleton-card.component';
 import { RecommendationCardComponent } from '../../shared/components/recommendation-card/recommendation-card.component';
+import { LoadingService } from '../../core/services/loading.service';
 
 @Component({
   selector: 'app-recommendations',
@@ -21,9 +22,10 @@ export class RecommendationsComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly dashboardService = inject(DashboardService);
   private readonly toastService = inject(ToastService);
+  private readonly loadingService = inject(LoadingService);
 
   recommendations = signal<JobRecommendation[]>([]);
-  loading         = signal(true);
+  loading         = computed(() => this.loadingService.isLoading() && this.recommendations().length === 0);
   error           = signal<string | null>(null);
 
   private readonly CIRCUMFERENCE = 2 * Math.PI * 26; // r=26
@@ -33,12 +35,10 @@ export class RecommendationsComponent implements OnInit {
   }
 
   refreshRecommendations(): void {
-    this.loading.set(true);
     this.error.set(null);
     this.recService.getRecommendations().subscribe({
       next: (data) => {
         this.recommendations.set(data);
-        this.loading.set(false);
       },
       error: (err: any) => {
         if (err && err.status === 404) {
@@ -46,7 +46,6 @@ export class RecommendationsComponent implements OnInit {
         } else {
           this.error.set('Failed to load recommendations. Please try again later.');
         }
-        this.loading.set(false);
       }
     });
   }

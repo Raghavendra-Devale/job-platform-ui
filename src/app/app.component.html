@@ -1,3 +1,6 @@
+@if (loadingService.isLoading()) {
+  <div class="global-loading-bar" id="global-loading-bar"></div>
+}
 <app-navbar></app-navbar>
 <main class="main-content">
   <router-outlet></router-outlet>

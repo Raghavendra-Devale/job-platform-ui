@@ -1,10 +1,11 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { JobService } from '../../core/services/job.service';
 import { JobResponse } from '../../core/models/job.models';
 import { AuthService } from '../../core/services/auth.service';
 import { DashboardService } from '../../core/services/dashboard.service';
+import { LoadingService } from '../../core/services/loading.service';
 
 @Component({
   selector: 'app-job-detail',
@@ -18,9 +19,10 @@ export class JobDetailComponent implements OnInit {
   private readonly route             = inject(ActivatedRoute);
   readonly authService               = inject(AuthService);
   private readonly dashboardService  = inject(DashboardService);
+  private readonly loadingService    = inject(LoadingService);
 
   job     = signal<JobResponse | null>(null);
-  loading = signal(true);
+  loading = computed(() => this.loadingService.isLoading() && !this.job());
   error   = signal<string | null>(null);
   jobId: number | null = null;
 
@@ -32,7 +34,7 @@ export class JobDetailComponent implements OnInit {
 
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
-    if (!id) { this.error.set('Invalid job ID.'); this.loading.set(false); return; }
+    if (!id) { this.error.set('Invalid job ID.'); return; }
     this.jobId = id;
 
     // Record job view on visit (if logged in)
@@ -41,11 +43,9 @@ export class JobDetailComponent implements OnInit {
     this.jobService.getJobById(id).subscribe({
       next: (job) => {
         this.job.set(job);
-        this.loading.set(false);
       },
       error: () => {
         this.error.set('Could not load this job. It may have been removed or the backend is unavailable.');
-        this.loading.set(false);
       },
     });
   }
