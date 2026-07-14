@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { DashboardService } from '../../core/services/dashboard.service';
 import { DashboardSummary, JobApplication } from '../../core/models/dashboard.models';
@@ -8,7 +8,7 @@ import { JobListResponse } from '../../core/models/job.models';
 import { ToastService } from '../../core/services/toast.service';
 import { SkeletonCardComponent } from '../../shared/components/skeleton-card/skeleton-card.component';
 import { RecommendationService } from '../../core/services/recommendation.service';
-import { JobRecommendation } from '../../core/models/recommendation.models';
+import { RecommendationCardResponse } from '../../core/models/recommendation.models';
 import { RecommendationCardComponent } from '../../shared/components/recommendation-card/recommendation-card.component';
 import { ConfirmationModalService } from '../../core/services/confirmation-modal.service';
 import { LoadingService } from '../../core/services/loading.service';
@@ -27,6 +27,7 @@ export class DashboardComponent implements OnInit {
   private readonly recService = inject(RecommendationService);
   private readonly confirmService = inject(ConfirmationModalService);
   private readonly loadingService = inject(LoadingService);
+  private readonly router = inject(Router);
 
   summary = signal<DashboardSummary | null>(null);
   applications = signal<JobApplication[]>([]);
@@ -36,7 +37,7 @@ export class DashboardComponent implements OnInit {
   recentJobs = signal<JobListResponse[]>([]);
   savedJobs  = signal<JobListResponse[]>([]);
 
-  recommendations = signal<JobRecommendation[]>([]);
+  recommendations = signal<RecommendationCardResponse[]>([]);
   loadingRecs = signal(false);
   recError = signal<string | null>(null);
 
@@ -157,19 +158,41 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  saveJob(rec: JobRecommendation): void {
-    if (this.authService.isSaved(rec.id)) {
+  saveJob(jobId: number): void {
+    if (this.authService.isSaved(jobId)) {
       this.toastService.showInfo('You have already saved this job');
       return;
     }
-    this.authService.saveJob(rec.id).subscribe({
+    const rec = this.recommendations().find(r => r.jobId === jobId);
+    const title = rec ? rec.title : 'Job';
+    
+    this.authService.saveJob(jobId).subscribe({
       next: () => {
-        this.toastService.showSuccess(`Saved "${rec.jobTitle}" to bookmarks`);
+        this.toastService.showSuccess(`Saved "${title}" to bookmarks`);
         this.loadData();
       },
       error: (err) => {
         console.error('Failed to save job from recommendations', err);
       }
     });
+  }
+
+  viewJobDetails(jobId: number): void {
+    this.router.navigate(['/jobs', jobId]);
+  }
+
+  applyJob(jobId: number): void {
+    const rec = this.recommendations().find(r => r.jobId === jobId);
+    if (rec && rec.applyUrl) {
+      window.open(rec.applyUrl, '_blank', 'noopener,noreferrer');
+      this.dashboardService.createApplication(jobId).subscribe({
+        next: () => {
+          this.toastService.showSuccess(`Application for "${rec.title}" is being tracked`);
+        },
+        error: (err) => {
+          console.error('Failed to track application', err);
+        }
+      });
+    }
   }
 }

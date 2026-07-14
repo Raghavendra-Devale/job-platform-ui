@@ -1,10 +1,29 @@
-export interface JobRecommendation {
-  id: number;
-  jobTitle: string;
+export interface RecommendationCardResponse {
+  jobId: number;
+  title: string;
   company: string;
   location: string;
-  matchScore: number;         // 0–100
-  matchedSkills: string[];
-  reason: string;
-  applyUrl?: string | null;
+  description: string;
+  remote: boolean;
+  postedAt: string;
+  similarityScore: number;
+  matchingSkills: string[];
+  missingSkills: string[];
+  recommendationReason: string;
+  applyUrl: string;
+}
+
+export interface RecommendationDetailResponse {
+  jobId: number;
+  title: string;
+  company: string;
+  location: string;
+  description: string;
+  remote: boolean;
+  postedAt: string;
+  similarityScore: number;
+  matchingSkills: string[];
+  missingSkills: string[];
+  recommendationReason: string;
+  applyUrl: string;
 }

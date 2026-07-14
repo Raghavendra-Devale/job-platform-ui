@@ -17,26 +17,27 @@
   </div>
 </div>
 
-<div *ngIf="!isLoading" class="rec-card">
+<div *ngIf="!isLoading && recommendation" class="rec-card" (click)="onViewDetails($event)" style="cursor: pointer;">
   <div class="rec-header">
     <div class="rec-titles">
-      <h3 class="rec-job-title">{{ recommendation.jobTitle }}</h3>
-      <span class="badge" [ngClass]="getScoreClass(recommendation.matchScore)">
-        {{ recommendation.matchScore }}% Match
+      <h3 class="rec-job-title" (click)="onViewDetails($event)">{{ recommendation.title }}</h3>
+      <span class="badge" [ngClass]="getScoreClass(matchScore)">
+        {{ matchScore }}% Match
       </span>
     </div>
   </div>
   <p class="rec-meta">{{ recommendation.company }} • {{ recommendation.location }}</p>
-  <p class="rec-reason">{{ recommendation.reason }}</p>
+  <p class="rec-reason">{{ recommendation.recommendationReason }}</p>
   
-  <div class="rec-skills" *ngIf="recommendation.matchedSkills?.length">
-    <span *ngFor="let skill of recommendation.matchedSkills" class="badge badge-blue">
+  <div class="rec-skills" *ngIf="recommendation.matchingSkills?.length">
+    <span *ngFor="let skill of recommendation.matchingSkills" class="badge badge-blue">
       {{ skill }}
     </span>
   </div>
 
-  <div class="rec-actions">
-    <button *ngIf="recommendation.applyUrl" class="btn btn-sm btn-primary" (click)="onApply()">Apply Now</button>
-    <button class="btn btn-sm btn-outline" (click)="onSave()">Save Job</button>
+  <div class="rec-actions" style="margin-top: var(--space-3); display: flex; gap: var(--space-2);">
+    <button class="btn btn-sm btn-outline" (click)="onViewDetails($event)">View Details</button>
+    <button *ngIf="recommendation.applyUrl" class="btn btn-sm btn-primary" (click)="onApply($event)">Apply Now</button>
+    <button class="btn btn-sm btn-outline" (click)="onSave($event)">Save Job</button>
   </div>
 </div>
