@@ -41,6 +41,9 @@ export class JobsComponent implements OnInit, OnDestroy {
 
   recentJobs  = signal<JobListResponse[]>([]);
   filterForm!: FormGroup;
+  
+  showMobileFilters = signal<boolean>(false);
+  activeChips = signal<{ key: string; label: string; displayValue: string }[]>([]);
 
   // Max 7 page buttons
   pages = computed(() =>
@@ -70,6 +73,7 @@ export class JobsComponent implements OnInit, OnDestroy {
       this.filterForm.patchValue(state, { emitEvent: false });
       this.currentPage.set(state.page);
 
+      this.updateActiveChips(params);
       this.search();
     });
 
@@ -96,6 +100,49 @@ export class JobsComponent implements OnInit, OnDestroy {
     if (this.authService.isAuthenticated()) {
       this.loadRecentlyViewed();
     }
+  }
+
+  updateActiveChips(params: any): void {
+    const chips: { key: string; label: string; displayValue: string }[] = [];
+    if (params.keyword?.trim()) {
+      chips.push({ key: 'keyword', label: 'Keyword', displayValue: params.keyword.trim() });
+    }
+    if (params.location) {
+      chips.push({ key: 'location', label: 'Location', displayValue: params.location });
+    }
+    if (params.provider) {
+      chips.push({ key: 'provider', label: 'Source', displayValue: params.provider });
+    }
+    if (params.remote !== null && params.remote !== undefined && params.remote !== '') {
+      const val = params.remote === 'true' ? 'Remote' : 'On-site';
+      chips.push({ key: 'remote', label: 'Work Mode', displayValue: val });
+    }
+    if (params.sortBy) {
+      let sortLabel = 'Relevance';
+      if (params.sortBy === 'createdAt') sortLabel = 'Newest first';
+      if (params.sortBy === 'company') sortLabel = 'Company A–Z';
+      chips.push({ key: 'sortBy', label: 'Sort', displayValue: sortLabel });
+    }
+    if (params.experience) {
+      chips.push({ key: 'experience', label: 'Experience', displayValue: params.experience });
+    }
+    if (params.jobType) {
+      chips.push({ key: 'jobType', label: 'Job Type', displayValue: params.jobType });
+    }
+    if (params.company?.trim()) {
+      chips.push({ key: 'company', label: 'Company', displayValue: params.company.trim() });
+    }
+    this.activeChips.set(chips);
+  }
+
+  removeChip(key: string): void {
+    const currentValues = { ...this.filterForm.value };
+    if (key === 'remote') {
+      currentValues[key] = null;
+    } else {
+      currentValues[key] = '';
+    }
+    this.filterForm.patchValue(currentValues);
   }
 
   loadRecentlyViewed(): void {

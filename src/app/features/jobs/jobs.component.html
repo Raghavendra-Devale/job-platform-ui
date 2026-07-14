@@ -30,13 +30,17 @@
     </div>
   </div>
 
+  <!-- Backdrop for mobile drawer -->
+  <div class="sidebar-backdrop" [class.drawer-open]="showMobileFilters()" (click)="showMobileFilters.set(false)"></div>
+
   <!-- ── Layout ─────────────────────────────────────────────────────── -->
   <div class="container jobs-layout">
 
     <!-- Sidebar Filters -->
-    <aside class="sidebar" aria-label="Job filters">
+    <aside class="sidebar" [class.drawer-open]="showMobileFilters()" aria-label="Job filters">
       <div class="sidebar-header">
         <h2 class="sidebar-title">Filters</h2>
+        <button class="close-drawer-btn" (click)="showMobileFilters.set(false)" type="button">&times;</button>
         <button class="btn btn-ghost btn-sm" (click)="clearFilters()" id="btn-clear-filters" type="button">Clear all</button>
       </div>
 
@@ -161,10 +165,10 @@
     <!-- Results -->
     <div class="results-section">
 
-      <!-- Results count -->
-      <div class="results-header">
+      <!-- Results count & Mobile filter toggle -->
+      <div class="results-header" style="display: flex; justify-content: space-between; align-items: center; gap: var(--space-4); margin-bottom: var(--space-4);">
         @if (!loading()) {
-          <span class="results-count" aria-live="polite" aria-atomic="true">
+          <span class="results-count" aria-live="polite" aria-atomic="true" style="margin: 0;">
             @if (totalElements() > 0) {
               <strong>{{ totalElements() | number }}</strong> jobs found
               @if (filterForm.get('keyword')?.value?.trim()) {
@@ -173,11 +177,32 @@
             }
           </span>
         } @else {
-          <span class="results-count results-loading">
+          <span class="results-count results-loading" style="margin: 0;">
             <span class="skeleton" style="display:inline-block;width:120px;height:14px;vertical-align:middle;"></span>
           </span>
         }
+        
+        <button class="btn btn-outline btn-sm mobile-filter-btn" (click)="showMobileFilters.set(true)" type="button" style="display: none; align-items: center; gap: 4px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/>
+          </svg>
+          Filters
+        </button>
       </div>
+
+      <!-- Active Filter Chips -->
+      @if (activeChips().length > 0) {
+        <div class="active-chips-row" style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-bottom: var(--space-5);">
+          <span style="font-size: var(--text-xs); color: var(--color-text-secondary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">Active Filters:</span>
+          @for (chip of activeChips(); track chip.key) {
+            <span class="badge" style="display: inline-flex; align-items: center; gap: 6px; background-color: var(--color-primary-light); color: var(--color-primary); border: 1px solid var(--color-primary-muted); border-radius: var(--radius-full); padding: 4px 10px; font-size: 10px; font-weight: 700; text-transform: uppercase;">
+              {{ chip.label }}: {{ chip.displayValue }}
+              <button (click)="removeChip(chip.key)" type="button" style="border: none; background: transparent; cursor: pointer; color: var(--color-primary); padding: 0; font-size: 13px; font-weight: 900; line-height: 1;" aria-label="Remove filter">&times;</button>
+            </span>
+          }
+          <button class="btn btn-ghost btn-xs" (click)="clearFilters()" type="button" style="font-weight: 700; font-size: 10px; text-transform: uppercase; padding-left: var(--space-2); padding-right: var(--space-2);">Clear All</button>
+        </div>
+      }
 
       <!-- ── Error ──────────────────────────────────────────────────── -->
       @if (error()) {
