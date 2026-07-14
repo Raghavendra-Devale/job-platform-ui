@@ -90,6 +90,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'recommendations/:id',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/recommendations/recommendation-detail/recommendation-detail.component').then(
+        (m) => m.RecommendationDetailComponent
+      ),
+  },
+  {
     path: 'settings',
     canActivate: [authGuard],
     loadComponent: () =>

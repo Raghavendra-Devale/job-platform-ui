@@ -49,102 +49,13 @@
   @if (state() === 'success') {
     <div class="rec-grid flex flex-column gap-md mt-lg" style="display: flex; flex-direction: column; gap: var(--space-4); margin-top: var(--space-6);">
       @for (rec of recommendations(); track rec.jobId; let idx = $index) {
-        <div class="card rec-card p-md animate-fade-in-up" [style.animation-delay]="(idx * 60) + 'ms'" style="border-left: 4px solid transparent; text-align: left; padding: var(--space-5);" [style.border-left-color]="getScoreColor(rec.similarityScore)">
-          <div class="card-inner flex justify-between align-start" style="width: 100%; gap: var(--space-6);">
-            
-            <div class="card-details flex flex-column gap-sm" style="flex: 1; min-width: 0; gap: var(--space-3);">
-              <!-- Top Header info -->
-              <div class="card-title-row flex align-center gap-sm" style="flex-wrap: wrap; gap: var(--space-2);">
-                <h3 style="margin: 0; font-size: var(--text-lg); font-weight: 700; color: var(--color-text-primary); text-overflow: ellipsis; overflow: hidden; white-space: nowrap; max-width: 450px;">
-                  {{ rec.title }}
-                </h3>
-                @if (rec.remote) {
-                  <app-badge variant="blue">Remote</app-badge>
-                }
-              </div>
-
-              <div class="card-meta-row flex align-center gap-md" style="font-size: var(--text-xs); color: var(--color-text-secondary); flex-wrap: wrap; gap: var(--space-4);">
-                <span><strong>Company:</strong> {{ rec.company }}</span>
-                <span><strong>Location:</strong> {{ rec.location }}</span>
-                @if (rec.postedAt) {
-                  <span><strong>Posted:</strong> {{ formatDate(rec.postedAt) }}</span>
-                }
-              </div>
-
-              <!-- Recommendation Reason -->
-              @if (rec.recommendationReason) {
-                <div class="reason-block p-sm" style="background-color: var(--color-surface-alt); border-radius: var(--radius-md); padding: var(--space-3); border: 1px solid var(--color-border-light); margin-top: 4px;">
-                  <p style="margin: 0 0 4px 0; font-size: 10px; font-weight: 600; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">Why this role?</p>
-                  <p style="margin: 0; font-size: var(--text-xs); color: var(--color-text-primary); line-height: 1.5;">
-                    {{ rec.recommendationReason }}
-                  </p>
-                </div>
-              }
-
-              <!-- Matching Skills -->
-              @if (rec.matchingSkills && rec.matchingSkills.length > 0) {
-                <div class="skills-block flex flex-column gap-xs" style="gap: var(--space-1); margin-top: 4px;">
-                  <span style="font-size: 10px; font-weight: 600; color: var(--color-success); text-transform: uppercase; letter-spacing: 0.05em;">Matching Skills</span>
-                  <div class="skills-list flex wrap gap-xs" style="gap: var(--space-1);">
-                    @for (skill of rec.matchingSkills; track skill) {
-                      <app-chip [label]="skill" [active]="true" style="--chip-bg: var(--color-success-light); --chip-text: var(--color-success);"></app-chip>
-                    }
-                  </div>
-                </div>
-              }
-
-              <!-- Missing Skills (Skill Gap!) -->
-              @if (rec.missingSkills && rec.missingSkills.length > 0) {
-                <div class="skills-block flex flex-column gap-xs" style="gap: var(--space-1); margin-top: 4px;">
-                  <span style="font-size: 10px; font-weight: 600; color: var(--color-error); text-transform: uppercase; letter-spacing: 0.05em;">Missing Skills</span>
-                  <div class="skills-list flex wrap gap-xs" style="gap: var(--space-1);">
-                    @for (skill of rec.missingSkills; track skill) {
-                      <app-chip [label]="skill" [active]="true" style="--chip-bg: var(--color-error-light); --chip-text: var(--color-error);"></app-chip>
-                    }
-                  </div>
-                </div>
-              }
-            </div>
-
-            <!-- Match Score Ring -->
-            <div class="score-ring-container flex flex-column align-center justify-center" style="flex-shrink: 0;">
-              <div class="ring-indicator flex align-center justify-center" style="width: 64px; height: 64px; border-radius: var(--radius-full); font-weight: 800; font-size: var(--text-lg);" [style.background-color]="getScoreBgColor(rec.similarityScore)">
-                <span class="score-percent" [style.color]="getScoreColor(rec.similarityScore)">
-                  {{ getMatchPercent(rec.similarityScore) }}%
-                </span>
-              </div>
-              <span class="score-lbl" style="font-size: 10px; color: var(--color-text-secondary); margin-top: 6px; font-weight: 600; text-transform: uppercase;">Match Score</span>
-            </div>
-
-          </div>
-
-          <!-- Actions -->
-          <div class="card-actions flex justify-between align-center mt-md" style="margin-top: var(--space-4); border-top: 1px solid var(--color-border-light); padding-top: var(--space-3); display: flex; justify-content: space-between; align-items: center;">
-            <div class="actions-left flex gap-sm" style="display: flex; gap: var(--space-2);">
-              <button class="btn btn-ghost btn-sm flex align-center gap-xs" (click)="saveJob(rec)" style="display: flex; align-items: center; gap: var(--space-1);">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                  <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
-                </svg>
-                Save
-              </button>
-            </div>
-            
-            <div class="actions-right flex gap-sm" style="display: flex; gap: var(--space-2);">
-              <button class="btn btn-outline btn-sm" [routerLink]="['/jobs', rec.jobId]">
-                View Details
-              </button>
-              @if (rec.applyUrl) {
-                <a [href]="rec.applyUrl" target="_blank" rel="noopener" class="btn btn-primary btn-sm flex align-center gap-xs" (click)="trackApplication(rec)" style="display: flex; align-items: center; gap: var(--space-1);">
-                  Apply Now
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/>
-                  </svg>
-                </a>
-              }
-            </div>
-          </div>
-
-        </div>
+        <app-recommendation-card
+          [recommendation]="rec"
+          [style.animation-delay]="(idx * 60) + 'ms'"
+          (save)="saveJob($event)"
+          (apply)="applyJob($event)"
+          (viewDetails)="viewJobDetails($event)">
+        </app-recommendation-card>
       }
     </div>
   }

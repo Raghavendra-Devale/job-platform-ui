@@ -7,7 +7,7 @@ export interface JobListResponse {
   source: string;
   remote: boolean | null;
   tags: string | null;
-  createdAt: string | null; // ISO datetime string from backend
+  createdAt: string | null;
   salary?: string | null;
   jobType?: string | null;
   applyUrl?: string | null;
@@ -65,7 +65,7 @@ export interface SyncSummaryResponse {
   providers: ProviderSyncSummary[];
 }
 
-// Provider health map: { "RemoteOK": "UP", "Arbeitnow": "DOWN" }
+// Provider health map
 export type ProviderHealthMap = Record<string, 'UP' | 'DOWN'>;
 
 // Generic paginated page from Spring Data
@@ -78,4 +78,44 @@ export interface Page<T> {
   first: boolean;
   last: boolean;
   empty: boolean;
+}
+
+export interface JobSearchState {
+  keyword: string;
+  location: string;
+  provider: string;
+  remote: string | null;
+  sortBy: string;
+  experience: string;
+  jobType: string;
+  company: string;
+  page: number;
+}
+
+export function stateToParams(state: JobSearchState): Record<string, string> {
+  const params: Record<string, string> = {};
+  if (state.keyword?.trim()) params['keyword'] = state.keyword.trim();
+  if (state.location) params['location'] = state.location;
+  if (state.provider) params['provider'] = state.provider;
+  if (state.remote !== null && state.remote !== '') params['remote'] = state.remote;
+  if (state.sortBy) params['sortBy'] = state.sortBy;
+  if (state.experience) params['experience'] = state.experience;
+  if (state.jobType) params['jobType'] = state.jobType;
+  if (state.company?.trim()) params['company'] = state.company.trim();
+  if (state.page > 0) params['page'] = state.page.toString();
+  return params;
+}
+
+export function paramsToState(params: Record<string, any>): JobSearchState {
+  return {
+    keyword: params['keyword'] || '',
+    location: params['location'] || '',
+    provider: params['provider'] || '',
+    remote: params['remote'] === 'true' ? 'true' : params['remote'] === 'false' ? 'false' : null,
+    sortBy: params['sortBy'] || '',
+    experience: params['experience'] || '',
+    jobType: params['jobType'] || '',
+    company: params['company'] || '',
+    page: params['page'] ? +params['page'] : 0,
+  };
 }

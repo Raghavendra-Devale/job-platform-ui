@@ -26,4 +26,6 @@ export interface RecommendationDetailResponse {
   missingSkills: string[];
   recommendationReason: string;
   applyUrl: string;
+  strengths: string[];
+  suggestions: string[];
 }

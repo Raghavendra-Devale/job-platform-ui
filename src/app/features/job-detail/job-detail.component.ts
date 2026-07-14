@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { JobService } from '../../core/services/job.service';
 import { JobResponse } from '../../core/models/job.models';
@@ -20,11 +20,18 @@ export class JobDetailComponent implements OnInit {
   readonly authService               = inject(AuthService);
   private readonly dashboardService  = inject(DashboardService);
   private readonly loadingService    = inject(LoadingService);
+  private readonly router            = inject(Router);
 
   job     = signal<JobResponse | null>(null);
   loading = computed(() => this.loadingService.isLoading() && !this.job());
   error   = signal<string | null>(null);
   jobId: number | null = null;
+
+  compareResume(): void {
+    if (this.jobId) {
+      this.router.navigate(['/recommendations', this.jobId]);
+    }
+  }
 
   onApplyClick(): void {
     if (this.jobId && this.authService.isAuthenticated()) {

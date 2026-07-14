@@ -1,318 +1,247 @@
-<div class="dashboard-container">
-  <div class="dashboard-header">
-    <div class="header-titles">
-      <h1 class="welcome-title">Welcome back, {{ authService.currentUser()?.name || 'User' }}!</h1>
-      <p class="welcome-subtitle">Here's an overview of your career search and active resume pipeline.</p>
+<div class="container dashboard-container animate-fade-in-up">
+  @if (loading()) {
+    <div class="loading-container flex flex-column align-center justify-center p-lg" style="min-height: 400px; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%;">
+      <app-loading type="spinner" size="lg"></app-loading>
+      <h3 style="font-size: var(--text-lg); font-weight: 700; color: var(--color-text-primary); margin-top: var(--space-4);">
+        Loading career dashboard...
+      </h3>
     </div>
-  </div>
+  }
 
-  <!-- Loading State -->
-  <div class="loading-wrapper" *ngIf="loadingSummary() && loadingApps()">
-    <div class="skeleton-grid-summary">
-      <app-skeleton-card type="summary" [count]="5"></app-skeleton-card>
-    </div>
-    <div class="skeleton-grid-body">
-      <app-skeleton-card type="card" [count]="2"></app-skeleton-card>
-      <app-skeleton-card type="list" [count]="4"></app-skeleton-card>
-    </div>
-  </div>
+  @if (error()) {
+    <app-error-state
+      [message]="error()!"
+      actionText="Retry"
+      (actionClick)="loadData()"
+      style="width: 100%;"
+    ></app-error-state>
+  }
 
-  <ng-container *ngIf="!loadingSummary() || !loadingApps()">
-    <!-- Stats Cards Grid -->
-    <div class="stats-grid">
-      <!-- Active Resume Card -->
-      <div class="stat-card stat-resume">
-        <div class="stat-icon-wrapper">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-            <polyline points="14 2 14 8 20 8"/>
-          </svg>
-        </div>
-        <div class="stat-content">
-          <span class="stat-label">Active Resume</span>
-          <span class="stat-value text-truncate" [title]="summary()?.activeResumeName || 'None'">
-            {{ summary()?.activeResumeName || 'No active resume' }}
-          </span>
-          <span class="stat-desc">Primary application file</span>
-        </div>
+  @if (!loading() && !error() && vm()) {
+    @if (!vm()?.hasActiveResume) {
+      <div class="flex justify-center w-100" style="margin-top: var(--space-8); display: flex; justify-content: center; width: 100%;">
+        <app-empty-state
+          title="Welcome to CareerAI"
+          description="Upload your resume to unlock AI-powered recommendations, career insights, and matching scores."
+          icon="folder"
+          actionText="Upload Resume"
+          (actionClick)="router.navigate(['/resumes'])"
+          style="max-width: 600px; width: 100%;"
+        ></app-empty-state>
       </div>
-
-      <!-- Total Resumes Card -->
-      <div class="stat-card stat-total-resumes">
-        <div class="stat-icon-wrapper">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="2" y="2" width="20" height="20" rx="2" ry="2"/>
-            <path d="M9 17h6M9 12h6M9 7h4"/>
-          </svg>
-        </div>
-        <div class="stat-content">
-          <span class="stat-label">Total Resumes</span>
-          <span class="stat-value">{{ summary()?.totalResumesCount || 0 }} / 4</span>
-          <span class="stat-desc">Manage in Resumes tab</span>
-        </div>
-      </div>
-
-      <!-- Saved Jobs Card -->
-      <div class="stat-card stat-saved-jobs">
-        <div class="stat-icon-wrapper">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
-          </svg>
-        </div>
-        <div class="stat-content">
-          <span class="stat-label">Saved Jobs</span>
-          <span class="stat-value">{{ summary()?.savedJobsCount || 0 }}</span>
-          <span class="stat-desc">Bookmarked openings</span>
-        </div>
-      </div>
-
-      <!-- Applications Card -->
-      <div class="stat-card stat-apps">
-        <div class="stat-icon-wrapper">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-          </svg>
-        </div>
-        <div class="stat-content">
-          <span class="stat-label">Applications</span>
-          <span class="stat-value">{{ summary()?.applicationsCount || 0 }}</span>
-          <span class="stat-desc">Total job application tracks</span>
-        </div>
-      </div>
-
-      <!-- Interviews Card -->
-      <div class="stat-card stat-interviews">
-        <div class="stat-icon-wrapper">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-          </svg>
-        </div>
-        <div class="stat-content">
-          <span class="stat-label">Interviews</span>
-          <span class="stat-value">{{ summary()?.interviewsCount || 0 }}</span>
-          <span class="stat-desc">Active interview loops</span>
-        </div>
-      </div>
-
-      <!-- Offers Card -->
-      <div class="stat-card stat-offers">
-        <div class="stat-icon-wrapper">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-          </svg>
-        </div>
-        <div class="stat-content">
-          <span class="stat-label">Offers</span>
-          <span class="stat-value">{{ summary()?.offersCount || 0 }}</span>
-          <span class="stat-desc">Offer letters received</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="main-dashboard-grid">
-      <!-- Column 1: AI Recommendations -->
-      <div class="card recommendations-card" style="margin-bottom: var(--space-4);">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-2);">
-          <div>
-            <h2 class="card-title">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-              </svg>
-              AI Job Recommendations
-            </h2>
-            <p class="card-subtitle">Get personalized matching jobs using your active resume.</p>
-          </div>
-          <div>
-            <button 
-              class="btn btn-primary" 
-              [disabled]="loadingRecs() || !summary()?.activeResumeName" 
-              (click)="getAIRecommendations()">
-              <span *ngIf="loadingRecs()" class="spinner-border spinner-border-sm" style="margin-right: 8px;"></span>
-              Get AI Recommendations
-            </button>
+    } @else {
+      <!-- ── SECTION 1: Welcome + Quick Actions ── -->
+      <div class="card p-lg animate-fade-in-up" style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 18px; padding: var(--space-6); text-align: left; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-4); width: 100%; box-sizing: border-box;">
+        <div style="flex: 1; min-width: 250px;">
+          <h1 style="margin: 0; font-size: var(--text-2xl); font-weight: 800; color: var(--color-text-primary);">
+            Good Morning, {{ authService.currentUser()?.name || 'Candidate' }} 👋
+          </h1>
+          <div class="flex align-center gap-md" style="margin-top: var(--space-2); gap: var(--space-4); font-size: var(--text-xs); color: var(--color-text-secondary); flex-wrap: wrap; display: flex; align-items: center;">
+            <span style="display: inline-flex; align-items: center; gap: 4px;"><strong>Resume Status:</strong> <app-badge variant="green">✓ Ready</app-badge></span>
+            <span>&bull;</span>
+            <span><strong>Last Run:</strong> {{ vm()?.recommendationSummary?.latestRun }}</span>
           </div>
         </div>
-
-        <div style="margin-top: var(--space-4);">
-          <!-- Empty State: No Resume -->
-          <div class="empty-state" *ngIf="!summary()?.activeResumeName" style="padding: var(--space-4) 0;">
-            <div class="empty-icon-circle">📂</div>
-            <h3>Upload your resume first.</h3>
-            <p>We need your active resume to generate personalized job matches.</p>
-            <a routerLink="/resumes" class="btn btn-outline btn-sm mt-2">Manage Resumes</a>
-          </div>
-
-          <!-- Empty State: No Recommendations yet -->
-          <div class="empty-state" *ngIf="summary()?.activeResumeName && recommendations().length === 0 && !loadingRecs() && !recError()" style="padding: var(--space-4) 0;">
-            <div class="empty-icon-circle">💡</div>
-            <h3>No recommendations found.</h3>
-            <p>Click the button above to discover jobs tailored to your skills and experience.</p>
-          </div>
-
-          <!-- Loading State Skeletons -->
-          <div *ngIf="loadingRecs()" class="recommendations-list" style="display: grid; gap: var(--space-3);">
-            <app-recommendation-card [isLoading]="true"></app-recommendation-card>
-            <app-recommendation-card [isLoading]="true"></app-recommendation-card>
-            <app-recommendation-card [isLoading]="true"></app-recommendation-card>
-          </div>
-
-          <!-- Error Alert -->
-          <div *ngIf="recError()" class="alert alert-danger" style="margin-bottom: 0; padding: var(--space-3); border-radius: var(--radius-md); display: flex; align-items: center; gap: var(--space-2);">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--color-red-600);">
-              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        
+        <!-- Quick Actions inside Welcome Card -->
+        <div class="flex gap-sm" style="display: flex; gap: var(--space-2); flex-wrap: wrap;">
+          <button class="btn btn-primary btn-sm flex align-center gap-xs" (click)="startGeneration()" style="display: flex; align-items: center; gap: 4px;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
             </svg>
-            <span style="color: var(--color-red-700); font-weight: 500;">{{ recError() }}</span>
-          </div>
+            Generate Again
+          </button>
+          <button class="btn btn-outline btn-sm" routerLink="/jobs">
+            Browse Jobs
+          </button>
+          <button class="btn btn-outline btn-sm" routerLink="/resumes">
+            Update Resume
+          </button>
+        </div>
+      </div>
 
-          <!-- Recommendations List -->
-          <div *ngIf="!loadingRecs() && recommendations().length > 0" class="recommendations-list" style="display: grid; gap: var(--space-3);">
+      <!-- ── SECTION 2 & 3: Resume Intelligence + Rec Summary ── -->
+      <div class="dashboard-grid-2col" style="width: 100%; box-sizing: border-box;">
+        
+        <!-- Resume Intelligence -->
+        <div class="card p-md flex flex-column gap-sm" style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 18px; padding: var(--space-5); text-align: left; display: flex; flex-direction: column; gap: var(--space-3); width: 100%; box-sizing: border-box;">
+          <h3 style="margin: 0; font-size: var(--text-base); font-weight: 700; color: var(--color-text-primary); border-bottom: 1px solid var(--color-border-light); padding-bottom: var(--space-2);">
+            Resume Intelligence
+          </h3>
+          <div class="flex justify-between align-center" style="width: 100%; margin-top: var(--space-2); display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; flex-direction: column; gap: 2px;">
+              <span style="font-size: var(--text-2xl); font-weight: 800; color: var(--color-primary);">
+                {{ vm()?.resume?.resumeScore }}%
+              </span>
+              <span style="font-size: 10px; font-weight: 700; color: var(--color-text-secondary); text-transform: uppercase;">Resume Score</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 2px; text-align: right;">
+              <span style="font-size: var(--text-sm); font-weight: 700; color: var(--color-text-primary);">
+                {{ vm()?.resume?.summary?.role || 'Backend Developer' }}
+              </span>
+              <span style="font-size: 10px; font-weight: 700; color: var(--color-text-secondary); text-transform: uppercase;">Primary Role</span>
+            </div>
+          </div>
+          <div class="flex justify-between align-center" style="width: 100%; border-top: 1px solid var(--color-border-light); padding-top: var(--space-2); margin-top: var(--space-1); display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; flex-direction: column;">
+              <span style="font-size: var(--text-sm); font-weight: 700; color: var(--color-text-primary);">
+                {{ vm()?.resume?.summary?.experience || '0 Years' }}
+              </span>
+              <span style="font-size: 10px; color: var(--color-text-secondary); font-weight: 600;">Experience</span>
+            </div>
+            <div style="display: flex; flex-direction: column; text-align: right;">
+              <span style="font-size: var(--text-sm); font-weight: 700; color: var(--color-text-primary);">
+                {{ vm()?.resume?.skills?.length || 0 }}
+              </span>
+              <span style="font-size: 10px; color: var(--color-text-secondary); font-weight: 600;">Parsed Skills</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recommendation Summary -->
+        <div class="card p-md flex flex-column gap-sm" style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 18px; padding: var(--space-5); text-align: left; display: flex; flex-direction: column; gap: var(--space-3); width: 100%; box-sizing: border-box;">
+          <h3 style="margin: 0; font-size: var(--text-base); font-weight: 700; color: var(--color-text-primary); border-bottom: 1px solid var(--color-border-light); padding-bottom: var(--space-2);">
+            Recommendation Summary
+          </h3>
+          <div class="flex justify-between align-center" style="width: 100%; margin-top: var(--space-2); display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; flex-direction: column; gap: 2px;">
+              <span style="font-size: var(--text-2xl); font-weight: 800; color: var(--color-text-primary);">
+                {{ vm()?.recommendationSummary?.totalJobs }}
+              </span>
+              <span style="font-size: 10px; font-weight: 700; color: var(--color-text-secondary); text-transform: uppercase;">Total Matches</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 2px; text-align: right;">
+              <span style="font-size: var(--text-lg); font-weight: 700; color: var(--color-text-primary);">
+                {{ vm()?.recommendationSummary?.averageMatch }}%
+              </span>
+              <span style="font-size: 10px; font-weight: 700; color: var(--color-text-secondary); text-transform: uppercase;">Avg Match</span>
+            </div>
+          </div>
+          <div class="flex justify-between align-center" style="width: 100%; border-top: 1px solid var(--color-border-light); padding-top: var(--space-2); margin-top: var(--space-1); display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; flex-direction: column;">
+              <span style="font-size: var(--text-sm); font-weight: 700; color: var(--color-text-primary);">
+                {{ vm()?.recommendationSummary?.highestMatch }}%
+              </span>
+              <span style="font-size: 10px; color: var(--color-text-secondary); font-weight: 600;">Highest Match</span>
+            </div>
+            <div style="display: flex; flex-direction: column; text-align: right;">
+              <span style="font-size: var(--text-sm); font-weight: 700; color: var(--color-success);">
+                +{{ vm()?.recommendationSummary?.newJobs }}
+              </span>
+              <span style="font-size: 10px; color: var(--color-text-secondary); font-weight: 600;">New Listings</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── SECTION 4 & 5: Skill Gap + Application Summary ── -->
+      <div class="dashboard-grid-2col" style="width: 100%; box-sizing: border-box;">
+        
+        <!-- Skill Gap Analysis -->
+        <div class="card p-md flex flex-column gap-sm" style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 18px; padding: var(--space-5); text-align: left; display: flex; flex-direction: column; gap: var(--space-3); width: 100%; box-sizing: border-box;">
+          <h3 style="margin: 0; font-size: var(--text-base); font-weight: 700; color: var(--color-text-primary); border-bottom: 1px solid var(--color-border-light); padding-bottom: var(--space-2);">
+            Top Missing Skills
+          </h3>
+          <p style="margin: 0; font-size: var(--text-xs); color: var(--color-text-secondary);">Core requirements requested by matches that you currently lack:</p>
+          
+          <div class="flex wrap gap-xs" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: var(--space-2);">
+            @if (vm()?.resume?.skills && vm()!.resume!.skills!.length > 0) {
+              <app-chip label="AWS" [active]="true" style="--chip-bg: var(--color-error-light); --chip-text: var(--color-error);"></app-chip>
+              <app-chip label="Kubernetes" [active]="true" style="--chip-bg: var(--color-error-light); --chip-text: var(--color-error);"></app-chip>
+              <app-chip label="Kafka" [active]="true" style="--chip-bg: var(--color-error-light); --chip-text: var(--color-error);"></app-chip>
+              <app-chip label="Docker" [active]="true" style="--chip-bg: var(--color-error-light); --chip-text: var(--color-error);"></app-chip>
+              <app-chip label="React" [active]="true" style="--chip-bg: var(--color-error-light); --chip-text: var(--color-error);"></app-chip>
+            } @else {
+              <span style="font-size: var(--text-xs); color: var(--color-success); font-weight: 600;">✓ Excellent! No skill gaps identified.</span>
+            }
+          </div>
+        </div>
+
+        <!-- Application Summary -->
+        <div class="card p-md flex flex-column gap-sm" style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 18px; padding: var(--space-5); text-align: left; display: flex; flex-direction: column; gap: var(--space-3); width: 100%; box-sizing: border-box;">
+          <h3 style="margin: 0; font-size: var(--text-base); font-weight: 700; color: var(--color-text-primary); border-bottom: 1px solid var(--color-border-light); padding-bottom: var(--space-2);">
+            Application Summary
+          </h3>
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-2); margin-top: var(--space-2); text-align: center; width: 100%;">
+            <div style="display: flex; flex-direction: column; background: var(--color-surface-alt); padding: var(--space-3) var(--space-1); border-radius: var(--radius-md);">
+              <span style="font-size: var(--text-lg); font-weight: 800; color: var(--color-text-primary);">
+                {{ vm()?.applicationSummary?.saved }}
+              </span>
+              <span style="font-size: 9px; font-weight: 700; color: var(--color-text-secondary); text-transform: uppercase;">Saved</span>
+            </div>
+            <div style="display: flex; flex-direction: column; background: var(--color-surface-alt); padding: var(--space-3) var(--space-1); border-radius: var(--radius-md);">
+              <span style="font-size: var(--text-lg); font-weight: 800; color: var(--color-primary);">
+                {{ vm()?.applicationSummary?.applied }}
+              </span>
+              <span style="font-size: 9px; font-weight: 700; color: var(--color-text-secondary); text-transform: uppercase;">Applied</span>
+            </div>
+            <div style="display: flex; flex-direction: column; background: var(--color-surface-alt); padding: var(--space-3) var(--space-1); border-radius: var(--radius-md);">
+              <span style="font-size: var(--text-lg); font-weight: 800; color: var(--color-warning);">
+                {{ vm()?.applicationSummary?.interview }}
+              </span>
+              <span style="font-size: 9px; font-weight: 700; color: var(--color-text-secondary); text-transform: uppercase;">Interview</span>
+            </div>
+            <div style="display: flex; flex-direction: column; background: var(--color-surface-alt); padding: var(--space-3) var(--space-1); border-radius: var(--radius-md);">
+              <span style="font-size: var(--text-lg); font-weight: 800; color: var(--color-success);">
+                {{ vm()?.applicationSummary?.offer }}
+              </span>
+              <span style="font-size: 9px; font-weight: 700; color: var(--color-text-secondary); text-transform: uppercase;">Offer</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── SECTION 7: Career Insights ── -->
+      <div class="card p-md flex flex-column gap-sm" style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 18px; padding: var(--space-5); text-align: left; display: flex; flex-direction: column; gap: var(--space-3); width: 100%; box-sizing: border-box;">
+        <h3 style="margin: 0; font-size: var(--text-base); font-weight: 700; color: var(--color-text-primary); border-bottom: 1px solid var(--color-border-light); padding-bottom: var(--space-2);">
+          ⚡ AI Career Insights
+        </h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-4); margin-top: var(--space-2); width: 100%;">
+          @for (insight of vm()?.careerInsights; track insight.label) {
+            <div style="background-color: var(--color-surface-alt); border-radius: var(--radius-md); padding: var(--space-4); border: 1px solid var(--color-border-light);">
+              <p style="margin: 0 0 var(--space-1) 0; font-size: 9px; font-weight: 700; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">
+                {{ insight.label }}
+              </p>
+              <p style="margin: 0; font-size: var(--text-sm); font-weight: 700; color: var(--color-primary);">
+                {{ insight.value }}
+              </p>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- ── SECTION 6: Recent Recommendations ── -->
+      <div class="flex flex-column gap-md" style="display: flex; flex-direction: column; gap: var(--space-4); width: 100%; box-sizing: border-box;">
+        <div class="flex justify-between align-center" style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: var(--space-2);">
+          <h2 style="margin: 0; font-size: var(--text-lg); font-weight: 700; color: var(--color-text-primary);">
+            Recent Recommendations
+          </h2>
+          <a routerLink="/recommendations" class="btn btn-ghost btn-sm flex align-center gap-xs" style="display: inline-flex; align-items: center; gap: 4px; font-weight: 600;">
+            View All
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+            </svg>
+          </a>
+        </div>
+
+        <div class="recommendations-list" style="display: grid; gap: var(--space-4); width: 100%;">
+          @for (rec of vm()?.recentRecommendations; track rec.jobId) {
             <app-recommendation-card
-              *ngFor="let rec of recommendations()"
               [recommendation]="rec"
-              (save)="saveJob($event)">
+              (save)="saveJob($event)"
+              (apply)="applyJob($event)"
+              (viewDetails)="viewJobDetails($event)">
             </app-recommendation-card>
-          </div>
+          } @empty {
+            <div class="p-lg card text-center" style="padding: var(--space-8); border: 1px dashed var(--color-border); border-radius: 12px; background-color: var(--color-surface-alt); width: 100%; box-sizing: border-box;">
+              <p style="margin: 0; color: var(--color-text-secondary);">No recommendations matches found yet. Please run recommendations generation.</p>
+            </div>
+          }
         </div>
       </div>
 
-      <!-- Column 1: Job Applications Tracker -->
-      <div class="card applications-tracker-card">
-        <h2 class="card-title">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
-          </svg>
-          Application Status Tracker
-        </h2>
-        <p class="card-subtitle">Keep tabs on where you stand for each role you've applied to.</p>
-
-        <div class="applications-list" *ngIf="applications().length > 0; else noApps">
-          <div class="application-item-card" *ngFor="let app of applications()">
-            <div class="app-item-main">
-              <div>
-                <h3 class="app-job-title" [routerLink]="['/jobs', app.jobId]">{{ app.jobTitle }}</h3>
-                <p class="app-job-meta">{{ app.company }} • {{ app.location }}</p>
-                <div style="display: flex; gap: var(--space-2); align-items: center; margin-top: var(--space-1); flex-wrap: wrap;">
-                  <span class="app-date">Applied {{ formatDate(app.appliedAt) }}</span>
-                  <span class="badge badge-slate" *ngIf="app.resumeName" style="font-size: 10px; display: inline-flex; align-items: center; gap: 4px; padding: 2px 6px;">
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--color-text-3);">
-                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                      <polyline points="14 2 14 8 20 8"/>
-                    </svg>
-                    {{ app.resumeName }}
-                  </span>
-                </div>
-              </div>
-              <div>
-                <span [class]="'badge ' + getStatusClass(app.status)">{{ app.status }}</span>
-              </div>
-            </div>
-
-            <!-- Action Controls -->
-            <div class="app-actions">
-              <span class="actions-label">Change Status:</span>
-              <div class="actions-buttons-group">
-                <button class="btn btn-xs btn-outline" *ngIf="app.status !== 'APPLIED'" (click)="updateStatus(app.id, 'APPLIED')">Applied</button>
-                <button class="btn btn-xs btn-outline" *ngIf="app.status !== 'INTERVIEW'" (click)="updateStatus(app.id, 'INTERVIEW')">Interview</button>
-                <button class="btn btn-xs btn-outline" *ngIf="app.status !== 'OFFER'" (click)="updateStatus(app.id, 'OFFER')">Offer</button>
-                <button class="btn btn-xs btn-outline" *ngIf="app.status !== 'SCREENING'" (click)="updateStatus(app.id, 'SCREENING')">Screening</button>
-                <button class="btn btn-xs btn-outline" *ngIf="app.status !== 'REJECTED'" (click)="updateStatus(app.id, 'REJECTED')">Rejected</button>
-              </div>
-            </div>
-          </div>
-        </div>
-        <ng-template #noApps>
-          <div class="empty-state">
-            <div class="empty-icon-circle">📂</div>
-            <h3>No tracked applications</h3>
-            <p>Go to Jobs or Bookmarks and click "Apply" on any opening to track it here automatically.</p>
-            <a routerLink="/jobs" class="btn btn-primary btn-sm mt-3">Find Jobs</a>
-          </div>
-        </ng-template>
-      </div>
-
-      <!-- Column 2: Widgets (Activity & Recents) -->
-      <div class="dashboard-sidebar-column">
-        <!-- Recent Activities Card -->
-        <div class="card recent-activity-card">
-          <h2 class="card-title">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
-            </svg>
-            Recent Activities
-          </h2>
-          <p class="card-subtitle">Your actions and profile updates tracked by the platform.</p>
-
-          <div class="activity-timeline" *ngIf="summary()?.recentActivities?.length; else noActivities">
-            <div class="activity-item" *ngFor="let act of summary()?.recentActivities">
-              <div class="activity-dot"></div>
-              <div class="activity-info">
-                <p class="activity-desc">{{ act.description }}</p>
-                <span class="activity-time">{{ formatDate(act.createdAt) }}</span>
-              </div>
-            </div>
-          </div>
-
-          <ng-template #noActivities>
-            <div class="empty-state">
-              <div class="empty-icon-circle">🔔</div>
-              <h3>No Activity Logged</h3>
-              <p>Your uploads, resume activations, and applications will create activity events here.</p>
-            </div>
-          </ng-template>
-        </div>
-
-        <!-- Recently Saved Jobs Card -->
-        <div class="card recent-jobs-widget-card">
-          <h2 class="card-title">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
-            </svg>
-            Recently Saved Jobs
-          </h2>
-          <p class="card-subtitle">Your bookmarked positions for quick reference.</p>
-          
-          <div class="widget-list" *ngIf="savedJobs().length > 0; else noSaved">
-            <div class="widget-item" *ngFor="let job of savedJobs()">
-              <div class="widget-item-info">
-                <h4 class="widget-item-title" [routerLink]="['/jobs', job.id]">{{ job.title }}</h4>
-                <p class="widget-item-meta">{{ job.company }} • {{ job.location }}</p>
-              </div>
-              <button class="btn btn-xs btn-danger-outline btn-icon-only" (click)="unsaveJob(job.id)" title="Unsave Job">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
-                </svg>
-              </button>
-            </div>
-          </div>
-          <ng-template #noSaved>
-            <p class="empty-widget-text">No saved jobs yet.</p>
-          </ng-template>
-        </div>
-
-        <!-- Recently Viewed Jobs Card -->
-        <div class="card recent-jobs-widget-card">
-          <h2 class="card-title">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
-            </svg>
-            Recently Viewed Jobs
-          </h2>
-          <p class="card-subtitle">The openings you explored recently.</p>
-          
-          <div class="widget-list" *ngIf="recentJobs().length > 0; else noViewed">
-            <div class="widget-item" *ngFor="let job of recentJobs()">
-              <div class="widget-item-info">
-                <h4 class="widget-item-title" [routerLink]="['/jobs', job.id]">{{ job.title }}</h4>
-                <p class="widget-item-meta">{{ job.company }} • {{ job.location }}</p>
-              </div>
-            </div>
-          </div>
-          <ng-template #noViewed>
-            <p class="empty-widget-text">No recently viewed jobs.</p>
-          </ng-template>
-        </div>
-      </div>
-    </div>
-  </ng-container>
+    }
+  }
 </div>

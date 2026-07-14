@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { RecommendationService } from '../../core/services/recommendation.service';
 import { RecommendationCardResponse } from '../../core/models/recommendation.models';
 import { AuthService } from '../../core/services/auth.service';
@@ -12,6 +12,7 @@ import { ErrorStateComponent } from '../../shared/components/error-state/error-s
 import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { ChipComponent } from '../../shared/components/chip/chip.component';
 import { BadgeComponent } from '../../shared/components/badge/badge.component';
+import { RecommendationCardComponent } from '../../shared/components/recommendation-card/recommendation-card.component';
 
 @Component({
   selector: 'app-recommendations',
@@ -24,7 +25,8 @@ import { BadgeComponent } from '../../shared/components/badge/badge.component';
     ErrorStateComponent,
     EmptyStateComponent,
     ChipComponent,
-    BadgeComponent
+    BadgeComponent,
+    RecommendationCardComponent
   ],
   templateUrl: './recommendations.component.html',
   styleUrls: ['./recommendations.component.css'],
@@ -34,6 +36,7 @@ export class RecommendationsComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly dashboardService = inject(DashboardService);
   private readonly toastService = inject(ToastService);
+  private readonly router = inject(Router);
 
   recommendations = signal<RecommendationCardResponse[]>([]);
   state = signal<'initial' | 'loading' | 'success' | 'error'>('initial');
@@ -128,14 +131,16 @@ export class RecommendationsComponent implements OnInit {
     }
   }
 
-  saveJob(rec: RecommendationCardResponse): void {
-    if (this.authService.isSaved(rec.jobId)) {
+  saveJob(jobId: number): void {
+    if (this.authService.isSaved(jobId)) {
       this.toastService.showInfo('You have already saved this job');
       return;
     }
-    this.authService.saveJob(rec.jobId).subscribe({
+    const rec = this.recommendations().find(r => r.jobId === jobId);
+    const title = rec ? rec.title : 'Job';
+    this.authService.saveJob(jobId).subscribe({
       next: () => {
-        this.toastService.showSuccess(`Saved "${rec.title}" to bookmarks`);
+        this.toastService.showSuccess(`Saved "${title}" to bookmarks`);
       },
       error: (err) => {
         this.toastService.showError('Failed to save job');
@@ -144,9 +149,11 @@ export class RecommendationsComponent implements OnInit {
     });
   }
 
-  trackApplication(rec: RecommendationCardResponse): void {
-    if (this.authService.isAuthenticated()) {
-      this.dashboardService.createApplication(rec.jobId).subscribe({
+  applyJob(jobId: number): void {
+    const rec = this.recommendations().find(r => r.jobId === jobId);
+    if (rec && rec.applyUrl) {
+      window.open(rec.applyUrl, '_blank', 'noopener,noreferrer');
+      this.dashboardService.createApplication(jobId).subscribe({
         next: () => {
           this.toastService.showSuccess(`Application for "${rec.title}" is being tracked`);
         },
@@ -155,5 +162,9 @@ export class RecommendationsComponent implements OnInit {
         }
       });
     }
+  }
+
+  viewJobDetails(jobId: number): void {
+    this.router.navigate(['/jobs', jobId]);
   }
 }

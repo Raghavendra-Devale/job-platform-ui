@@ -1,6 +1,8 @@
+import { RecommendationCardResponse } from './recommendation.models';
+
 export interface ActivityLog {
   id: number;
-  activityType: string; // RESUME_UPLOADED, RESUME_ACTIVATED, JOB_SAVED, APPLICATION_SUBMITTED, APPLICATION_UPDATED
+  activityType: string;
   description: string;
   createdAt: string;
 }
@@ -25,4 +27,46 @@ export interface DashboardSummary {
   interviewsCount: number;
   offersCount: number;
   recentActivities: ActivityLog[];
+}
+
+export interface ResumeIntelligenceSummary {
+  candidateName: string;
+  role: string;
+  experience: string;
+}
+
+export interface ResumeIntelligence {
+  status: string;
+  summary?: ResumeIntelligenceSummary;
+  resumeScore?: number;
+  skills?: string[];
+  strengths?: string[];
+  improvementSuggestions?: string[];
+}
+
+export interface RecommendationSummary {
+  latestRun: string;
+  totalJobs: number;
+  averageMatch: number;
+  highestMatch: number;
+  newJobs: number;
+}
+
+export interface CareerInsight {
+  label: string;
+  value: string;
+}
+
+export interface DashboardViewModel {
+  resume: ResumeIntelligence;
+  recommendationSummary: RecommendationSummary;
+  recentRecommendations: RecommendationCardResponse[];
+  careerInsights: CareerInsight[];
+  applicationSummary: {
+    saved: number;
+    applied: number;
+    interview: number;
+    offer: number;
+  };
+  hasActiveResume: boolean;
 }
