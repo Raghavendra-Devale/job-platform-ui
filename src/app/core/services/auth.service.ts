@@ -54,6 +54,7 @@ export class AuthService {
     return this.http.post<LoginResponse>(`${environment.apiUrl}/auth/login`, credentials).pipe(
       tap((res) => {
         localStorage.setItem(this.loggedInKey, 'true');
+        localStorage.setItem('jwt_token', res.token);
         this.currentUser.set({
           id: res.id,
           name: res.name,
@@ -76,6 +77,7 @@ export class AuthService {
   logout(): Observable<any> {
     // Clear client-side state first
     localStorage.removeItem(this.loggedInKey);
+    localStorage.removeItem('jwt_token');
     this.currentUser.set(null);
     this.savedJobIds.set([]);
     this.resumes.set([]);

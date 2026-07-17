@@ -57,10 +57,39 @@ export interface CareerInsight {
   value: string;
 }
 
+export interface UserSummary {
+  name: string;
+  email: string;
+}
+
+export interface RecommendationStatus {
+  status: 'READY' | 'OUTDATED' | 'NOT_RUN';
+  message: string;
+  generatedAt: string | null;
+  isOutdated: boolean;
+}
+
+export interface RecommendationRun {
+  id: number;
+  generatedAt: string;
+  averageMatch: number;
+  recommendationCount: number;
+  items: RecommendationCardResponse[];
+}
+
+export interface RecentlyViewedJob {
+  id: number;
+  title: string;
+  company: string;
+  location: string;
+  remote: boolean;
+}
+
 export interface DashboardViewModel {
-  resume: ResumeIntelligence;
-  recommendationSummary: RecommendationSummary;
-  recentRecommendations: RecommendationCardResponse[];
+  userSummary: UserSummary;
+  resumeIntelligence: ResumeIntelligence;
+  recommendationStatus: RecommendationStatus;
+  latestRecommendationRun: RecommendationRun | null;
   careerInsights: CareerInsight[];
   applicationSummary: {
     saved: number;
@@ -68,5 +97,5 @@ export interface DashboardViewModel {
     interview: number;
     offer: number;
   };
-  hasActiveResume: boolean;
+  recentlyViewedJobs: RecentlyViewedJob[];
 }

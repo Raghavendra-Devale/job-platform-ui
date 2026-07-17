@@ -191,26 +191,6 @@ export class JobsComponent implements OnInit, OnDestroy {
 
     const { keyword, location, provider, remote, sortBy, experience, jobType, company } = this.filterForm.value;
 
-    const hasFilters = !!(keyword?.trim() || location || provider ||
-                          (remote != null && remote !== '') || sortBy ||
-                          experience || jobType || company?.trim());
-
-    if (!hasFilters) {
-      this.jobService.getJobs(this.currentPage(), this.pageSize)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: (res: Page<JobListResponse>) => {
-            this.jobs.set(res.content);
-            this.totalElements.set(res.totalElements);
-            this.totalPages.set(res.totalPages);
-          },
-          error: () => {
-            this.error.set('Could not load jobs. Is the backend running?');
-          }
-        });
-      return;
-    }
-
     this.jobService.searchJobs({
       keyword:    keyword?.trim() || undefined,
       location:   location || undefined,

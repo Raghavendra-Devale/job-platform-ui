@@ -29,3 +29,11 @@ export interface RecommendationDetailResponse {
   strengths: string[];
   suggestions: string[];
 }
+
+export interface RecommendationRunResponse {
+  id: number;
+  generatedAt: string;
+  averageMatch: number;
+  recommendationCount: number;
+  items: RecommendationCardResponse[];
+}

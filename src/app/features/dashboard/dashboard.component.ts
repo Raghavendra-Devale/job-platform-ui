@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
@@ -43,6 +43,12 @@ export class DashboardComponent implements OnInit {
   loading = signal<boolean>(true);
   error = signal<string | null>(null);
 
+  highestMatch = computed(() => {
+    const run = this.vm()?.latestRecommendationRun;
+    if (!run || !run.items || run.items.length === 0) return null;
+    return run.items.reduce((max, item) => item.similarityScore > max.similarityScore ? item : max, run.items[0]);
+  });
+
   ngOnInit(): void {
     this.loadData();
   }
@@ -65,7 +71,6 @@ export class DashboardComponent implements OnInit {
   }
 
   startGeneration(): void {
-    const resumeName = this.vm()?.resume?.summary?.candidateName || 'your active resume';
     this.confirmService.confirm({
       title: 'Generate AI Recommendations',
       message: `Would you like to analyze your active resume to generate matches?`,
@@ -74,11 +79,10 @@ export class DashboardComponent implements OnInit {
     }).then((confirmed) => {
       if (confirmed) {
         this.loading.set(true);
-        this.dashboardService.getDashboardView().subscribe({
-          next: (data) => {
-            this.vm.set(data);
-            this.loading.set(false);
+        this.dashboardService.regenerateRecommendations().subscribe({
+          next: () => {
             this.toastService.showSuccess('AI Recommendations generated successfully!');
+            this.loadData();
           },
           error: (err) => {
             console.error('Failed to generate recommendations', err);
@@ -95,7 +99,7 @@ export class DashboardComponent implements OnInit {
       this.toastService.showInfo('You have already saved this job');
       return;
     }
-    const rec = this.vm()?.recentRecommendations?.find(r => r.jobId === jobId);
+    const rec = this.vm()?.latestRecommendationRun?.items?.find(r => r.jobId === jobId);
     const title = rec ? rec.title : 'Job';
     this.authService.saveJob(jobId).subscribe({
       next: () => {
@@ -109,7 +113,7 @@ export class DashboardComponent implements OnInit {
   }
 
   applyJob(jobId: number): void {
-    const rec = this.vm()?.recentRecommendations?.find(r => r.jobId === jobId);
+    const rec = this.vm()?.latestRecommendationRun?.items?.find(r => r.jobId === jobId);
     if (rec && rec.applyUrl) {
       window.open(rec.applyUrl, '_blank', 'noopener,noreferrer');
       this.dashboardService.createApplication(jobId).subscribe({
@@ -124,7 +128,22 @@ export class DashboardComponent implements OnInit {
     }
   }
 
+  retryResumeProcessing(): void {
+    this.loading.set(true);
+    this.dashboardService.reprocessResume().subscribe({
+      next: () => {
+        this.toastService.showSuccess('Resume AI processing triggered! Reloading in 3 seconds...');
+        setTimeout(() => this.loadData(), 3000);
+      },
+      error: (err) => {
+        console.error('Failed to reprocess resume', err);
+        this.toastService.showError('Failed to trigger resume reprocessing. Please try again.');
+        this.loading.set(false);
+      }
+    });
+  }
+
   viewJobDetails(jobId: number): void {
-    this.router.navigate(['/jobs', jobId]);
+    this.router.navigate(['/recommendations', jobId]);
   }
 }

@@ -18,8 +18,8 @@
   }
 
   @if (!loading() && !error() && vm()) {
-    @if (!vm()?.hasActiveResume) {
-      <div class="flex justify-center w-100" style="margin-top: var(--space-8); display: flex; justify-content: center; width: 100%;">
+    @if (vm()?.resumeIntelligence?.status === 'NOT_UPLOADED') {
+      <div class="flex justify-center w-100" style="margin-top: var(--space-8); display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; gap: var(--space-4);">
         <app-empty-state
           title="Welcome to CareerAI"
           description="Upload your resume to unlock AI-powered recommendations, career insights, and matching scores."
@@ -29,217 +29,283 @@
           style="max-width: 600px; width: 100%;"
         ></app-empty-state>
       </div>
+    } @else if (vm()?.resumeIntelligence?.status === 'PROCESSING') {
+      <div class="flex justify-center w-100" style="margin-top: var(--space-8); display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; gap: var(--space-4);">
+        <div class="card p-lg text-center" style="max-width: 600px; width: 100%; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 18px; padding: var(--space-8); text-align: center; display: flex; flex-direction: column; align-items: center; gap: var(--space-4);">
+          <app-loading type="spinner" size="md"></app-loading>
+          <h3 style="margin: 0; font-size: var(--text-lg); font-weight: 700; color: var(--color-text-primary);">Analyzing Resume...</h3>
+          <p style="margin: 0; font-size: var(--text-sm); color: var(--color-text-secondary); line-height: 1.6;">
+            We are parsing your resume details to extract skills, experience, and build your AI profile. This takes only a few seconds.
+          </p>
+          <button class="btn btn-outline btn-sm" (click)="loadData()">Check Status</button>
+        </div>
+      </div>
+    } @else if (vm()?.resumeIntelligence?.status === 'FAILED') {
+      <div class="flex justify-center w-100" style="margin-top: var(--space-8); display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; gap: var(--space-4);">
+        <div class="card p-lg text-center" style="max-width: 600px; width: 100%; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 18px; padding: var(--space-8); text-align: center; display: flex; flex-direction: column; align-items: center; gap: var(--space-4);">
+          <div style="width: 56px; height: 56px; border-radius: 50%; background: rgba(239,68,68,0.1); color: #ef4444; display: flex; align-items: center; justify-content: center; font-size: 26px;">⚠️</div>
+          <h3 style="margin: 0; font-size: var(--text-lg); font-weight: 700; color: var(--color-text-primary);">Resume Analysis Failed</h3>
+          <p style="margin: 0; font-size: var(--text-sm); color: var(--color-text-secondary); line-height: 1.6; max-width: 420px;">
+            We encountered an issue extracting intelligence from your active resume. Click <strong>Retry AI Processing</strong> to try again, or upload a new resume.
+          </p>
+          <div class="flex gap-sm" style="display: flex; gap: var(--space-3); flex-wrap: wrap; justify-content: center;">
+            <button class="btn btn-primary btn-sm" (click)="retryResumeProcessing()" style="display: flex; align-items: center; gap: 6px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+              Retry AI Processing
+            </button>
+            <button class="btn btn-outline btn-sm" (click)="router.navigate(['/resumes'])">Manage Resumes</button>
+          </div>
+        </div>
+      </div>
+
     } @else {
-      <!-- ── SECTION 1: Welcome + Quick Actions ── -->
-      <div class="card p-lg animate-fade-in-up" style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 18px; padding: var(--space-6); text-align: left; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-4); width: 100%; box-sizing: border-box;">
-        <div style="flex: 1; min-width: 250px;">
-          <h1 style="margin: 0; font-size: var(--text-2xl); font-weight: 800; color: var(--color-text-primary);">
-            Good Morning, {{ authService.currentUser()?.name || 'Candidate' }} 👋
-          </h1>
-          <div class="flex align-center gap-md" style="margin-top: var(--space-2); gap: var(--space-4); font-size: var(--text-xs); color: var(--color-text-secondary); flex-wrap: wrap; display: flex; align-items: center;">
-            <span style="display: inline-flex; align-items: center; gap: 4px;"><strong>Resume Status:</strong> <app-badge variant="green">✓ Ready</app-badge></span>
-            <span>&bull;</span>
-            <span><strong>Last Run:</strong> {{ vm()?.recommendationSummary?.latestRun }}</span>
-          </div>
-        </div>
-        
-        <!-- Quick Actions inside Welcome Card -->
-        <div class="flex gap-sm" style="display: flex; gap: var(--space-2); flex-wrap: wrap;">
-          <button class="btn btn-primary btn-sm flex align-center gap-xs" (click)="startGeneration()" style="display: flex; align-items: center; gap: 4px;">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
-            </svg>
-            Generate Again
-          </button>
-          <button class="btn btn-outline btn-sm" routerLink="/jobs">
-            Browse Jobs
-          </button>
-          <button class="btn btn-outline btn-sm" routerLink="/resumes">
-            Update Resume
-          </button>
-        </div>
-      </div>
-
-      <!-- ── SECTION 2 & 3: Resume Intelligence + Rec Summary ── -->
-      <div class="dashboard-grid-2col" style="width: 100%; box-sizing: border-box;">
-        
-        <!-- Resume Intelligence -->
-        <div class="card p-md flex flex-column gap-sm" style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 18px; padding: var(--space-5); text-align: left; display: flex; flex-direction: column; gap: var(--space-3); width: 100%; box-sizing: border-box;">
-          <h3 style="margin: 0; font-size: var(--text-base); font-weight: 700; color: var(--color-text-primary); border-bottom: 1px solid var(--color-border-light); padding-bottom: var(--space-2);">
-            Resume Intelligence
-          </h3>
-          <div class="flex justify-between align-center" style="width: 100%; margin-top: var(--space-2); display: flex; justify-content: space-between; align-items: center;">
-            <div style="display: flex; flex-direction: column; gap: 2px;">
-              <span style="font-size: var(--text-2xl); font-weight: 800; color: var(--color-primary);">
-                {{ vm()?.resume?.resumeScore }}%
+      <!-- ── SECTION 1: AI Action Center Hero ── -->
+      <div class="card p-lg animate-fade-in-up" style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 18px; padding: var(--space-6); text-align: left; display: flex; flex-direction: column; gap: var(--space-4); width: 100%; box-sizing: border-box; margin-bottom: var(--space-4);">
+        <div class="flex justify-between align-center" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-4); width: 100%;">
+          <div>
+            <h1 style="margin: 0; font-size: var(--text-2xl); font-weight: 800; color: var(--color-text-primary);">
+              Good Morning, {{ vm()?.userSummary?.name || 'Candidate' }} 👋
+            </h1>
+            <div class="flex align-center gap-md" style="margin-top: var(--space-2); gap: var(--space-4); font-size: var(--text-xs); color: var(--color-text-secondary); flex-wrap: wrap; display: flex; align-items: center;">
+              <span style="display: inline-flex; align-items: center; gap: 4px;"><strong>Resume:</strong> <app-badge variant="green">✓ Ready</app-badge></span>
+              <span>&bull;</span>
+              <span><strong>Recommendation Status:</strong> 
+                <app-badge [variant]="vm()?.recommendationStatus?.status === 'READY' ? 'green' : (vm()?.recommendationStatus?.status === 'OUTDATED' ? 'amber' : 'blue')">
+                  {{ vm()?.recommendationStatus?.status }}
+                </app-badge>
               </span>
-              <span style="font-size: 10px; font-weight: 700; color: var(--color-text-secondary); text-transform: uppercase;">Resume Score</span>
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 2px; text-align: right;">
-              <span style="font-size: var(--text-sm); font-weight: 700; color: var(--color-text-primary);">
-                {{ vm()?.resume?.summary?.role || 'Backend Developer' }}
-              </span>
-              <span style="font-size: 10px; font-weight: 700; color: var(--color-text-secondary); text-transform: uppercase;">Primary Role</span>
+              @if (vm()?.latestRecommendationRun) {
+                <span>&bull;</span>
+                <span><strong>Last Generated:</strong> {{ vm()?.recommendationStatus?.message }}</span>
+              }
             </div>
           </div>
-          <div class="flex justify-between align-center" style="width: 100%; border-top: 1px solid var(--color-border-light); padding-top: var(--space-2); margin-top: var(--space-1); display: flex; justify-content: space-between; align-items: center;">
-            <div style="display: flex; flex-direction: column;">
-              <span style="font-size: var(--text-sm); font-weight: 700; color: var(--color-text-primary);">
-                {{ vm()?.resume?.summary?.experience || '0 Years' }}
-              </span>
-              <span style="font-size: 10px; color: var(--color-text-secondary); font-weight: 600;">Experience</span>
-            </div>
-            <div style="display: flex; flex-direction: column; text-align: right;">
-              <span style="font-size: var(--text-sm); font-weight: 700; color: var(--color-text-primary);">
-                {{ vm()?.resume?.skills?.length || 0 }}
-              </span>
-              <span style="font-size: 10px; color: var(--color-text-secondary); font-weight: 600;">Parsed Skills</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Recommendation Summary -->
-        <div class="card p-md flex flex-column gap-sm" style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 18px; padding: var(--space-5); text-align: left; display: flex; flex-direction: column; gap: var(--space-3); width: 100%; box-sizing: border-box;">
-          <h3 style="margin: 0; font-size: var(--text-base); font-weight: 700; color: var(--color-text-primary); border-bottom: 1px solid var(--color-border-light); padding-bottom: var(--space-2);">
-            Recommendation Summary
-          </h3>
-          <div class="flex justify-between align-center" style="width: 100%; margin-top: var(--space-2); display: flex; justify-content: space-between; align-items: center;">
-            <div style="display: flex; flex-direction: column; gap: 2px;">
-              <span style="font-size: var(--text-2xl); font-weight: 800; color: var(--color-text-primary);">
-                {{ vm()?.recommendationSummary?.totalJobs }}
-              </span>
-              <span style="font-size: 10px; font-weight: 700; color: var(--color-text-secondary); text-transform: uppercase;">Total Matches</span>
-            </div>
-            <div style="display: flex; flex-direction: column; gap: 2px; text-align: right;">
-              <span style="font-size: var(--text-lg); font-weight: 700; color: var(--color-text-primary);">
-                {{ vm()?.recommendationSummary?.averageMatch }}%
-              </span>
-              <span style="font-size: 10px; font-weight: 700; color: var(--color-text-secondary); text-transform: uppercase;">Avg Match</span>
-            </div>
-          </div>
-          <div class="flex justify-between align-center" style="width: 100%; border-top: 1px solid var(--color-border-light); padding-top: var(--space-2); margin-top: var(--space-1); display: flex; justify-content: space-between; align-items: center;">
-            <div style="display: flex; flex-direction: column;">
-              <span style="font-size: var(--text-sm); font-weight: 700; color: var(--color-text-primary);">
-                {{ vm()?.recommendationSummary?.highestMatch }}%
-              </span>
-              <span style="font-size: 10px; color: var(--color-text-secondary); font-weight: 600;">Highest Match</span>
-            </div>
-            <div style="display: flex; flex-direction: column; text-align: right;">
-              <span style="font-size: var(--text-sm); font-weight: 700; color: var(--color-success);">
-                +{{ vm()?.recommendationSummary?.newJobs }}
-              </span>
-              <span style="font-size: 10px; color: var(--color-text-secondary); font-weight: 600;">New Listings</span>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- ── SECTION 4 & 5: Skill Gap + Application Summary ── -->
-      <div class="dashboard-grid-2col" style="width: 100%; box-sizing: border-box;">
-        
-        <!-- Skill Gap Analysis -->
-        <div class="card p-md flex flex-column gap-sm" style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 18px; padding: var(--space-5); text-align: left; display: flex; flex-direction: column; gap: var(--space-3); width: 100%; box-sizing: border-box;">
-          <h3 style="margin: 0; font-size: var(--text-base); font-weight: 700; color: var(--color-text-primary); border-bottom: 1px solid var(--color-border-light); padding-bottom: var(--space-2);">
-            Top Missing Skills
-          </h3>
-          <p style="margin: 0; font-size: var(--text-xs); color: var(--color-text-secondary);">Core requirements requested by matches that you currently lack:</p>
           
-          <div class="flex wrap gap-xs" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: var(--space-2);">
-            @if (vm()?.resume?.skills && vm()!.resume!.skills!.length > 0) {
-              <app-chip label="AWS" [active]="true" style="--chip-bg: var(--color-error-light); --chip-text: var(--color-error);"></app-chip>
-              <app-chip label="Kubernetes" [active]="true" style="--chip-bg: var(--color-error-light); --chip-text: var(--color-error);"></app-chip>
-              <app-chip label="Kafka" [active]="true" style="--chip-bg: var(--color-error-light); --chip-text: var(--color-error);"></app-chip>
-              <app-chip label="Docker" [active]="true" style="--chip-bg: var(--color-error-light); --chip-text: var(--color-error);"></app-chip>
-              <app-chip label="React" [active]="true" style="--chip-bg: var(--color-error-light); --chip-text: var(--color-error);"></app-chip>
-            } @else {
-              <span style="font-size: var(--text-xs); color: var(--color-success); font-weight: 600;">✓ Excellent! No skill gaps identified.</span>
+          <div class="flex gap-sm" style="display: flex; gap: var(--space-2); flex-wrap: wrap;">
+            @if (vm()?.recommendationStatus?.status === 'READY') {
+              <button class="btn btn-primary btn-sm flex align-center gap-xs" (click)="startGeneration()" style="display: flex; align-items: center; gap: 4px;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                </svg>
+                Generate Again
+              </button>
             }
           </div>
         </div>
 
-        <!-- Application Summary -->
-        <div class="card p-md flex flex-column gap-sm" style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 18px; padding: var(--space-5); text-align: left; display: flex; flex-direction: column; gap: var(--space-3); width: 100%; box-sizing: border-box;">
-          <h3 style="margin: 0; font-size: var(--text-base); font-weight: 700; color: var(--color-text-primary); border-bottom: 1px solid var(--color-border-light); padding-bottom: var(--space-2);">
-            Application Summary
-          </h3>
-          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-2); margin-top: var(--space-2); text-align: center; width: 100%;">
-            <div style="display: flex; flex-direction: column; background: var(--color-surface-alt); padding: var(--space-3) var(--space-1); border-radius: var(--radius-md);">
-              <span style="font-size: var(--text-lg); font-weight: 800; color: var(--color-text-primary);">
-                {{ vm()?.applicationSummary?.saved }}
-              </span>
-              <span style="font-size: 9px; font-weight: 700; color: var(--color-text-secondary); text-transform: uppercase;">Saved</span>
+        @if (vm()?.recommendationStatus?.status === 'OUTDATED') {
+          <div style="background: var(--color-warning-light); border: 1px solid var(--color-warning); color: var(--color-warning-dark); border-radius: 12px; padding: var(--space-4); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-3); width: 100%; box-sizing: border-box;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 18px;">⚠️</span>
+              <p style="margin: 0; font-size: var(--text-xs); font-weight: 600; line-height: 1.4;">
+                Your resume has changed since your last recommendation run. Generate new recommendations to receive updated matches.
+              </p>
             </div>
-            <div style="display: flex; flex-direction: column; background: var(--color-surface-alt); padding: var(--space-3) var(--space-1); border-radius: var(--radius-md);">
-              <span style="font-size: var(--text-lg); font-weight: 800; color: var(--color-primary);">
-                {{ vm()?.applicationSummary?.applied }}
-              </span>
-              <span style="font-size: 9px; font-weight: 700; color: var(--color-text-secondary); text-transform: uppercase;">Applied</span>
+            <button class="btn btn-warning btn-sm" (click)="startGeneration()">
+              Generate Recommendations
+            </button>
+          </div>
+        }
+
+        @if (vm()?.recommendationStatus?.status === 'NOT_RUN') {
+          <div style="background: var(--color-primary-light); border: 1px solid var(--color-primary); color: var(--color-primary-dark); border-radius: 12px; padding: var(--space-4); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-3); width: 100%; box-sizing: border-box;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 18px;">✨</span>
+              <p style="margin: 0; font-size: var(--text-xs); font-weight: 600; line-height: 1.4;">
+                Get personalized job recommendations using CareerAI match scoring models.
+              </p>
             </div>
-            <div style="display: flex; flex-direction: column; background: var(--color-surface-alt); padding: var(--space-3) var(--space-1); border-radius: var(--radius-md);">
-              <span style="font-size: var(--text-lg); font-weight: 800; color: var(--color-warning);">
-                {{ vm()?.applicationSummary?.interview }}
-              </span>
-              <span style="font-size: 9px; font-weight: 700; color: var(--color-text-secondary); text-transform: uppercase;">Interview</span>
+            <button class="btn btn-primary btn-sm" (click)="startGeneration()">
+              Generate Recommendations
+            </button>
+          </div>
+        }
+
+        @if (highestMatch()) {
+          <div style="border-top: 1px solid var(--color-border-light); padding-top: var(--space-3); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-2);">
+            <span style="font-size: var(--text-xs); color: var(--color-text-secondary); display: flex; align-items: center; gap: 4px;">
+              ⭐ <strong>Highest Match:</strong> {{ highestMatch()?.title }} at {{ highestMatch()?.company }}
+            </span>
+            <span class="badge badge-green" style="font-weight: 700; font-size: var(--text-xs);">
+              {{ (highestMatch()?.similarityScore || 0) * 100 | number:'1.0-0' }}% Match
+            </span>
+          </div>
+        }
+      </div>
+
+      <!-- ── SECTION 2 & 3: Resume Intelligence + Career Insights ── -->
+      <div class="dashboard-grid-2col" style="width: 100%; box-sizing: border-box; margin-bottom: var(--space-4); display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-4);">
+        
+        <!-- Resume Intelligence -->
+        <div class="card p-md flex flex-column justify-between" style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 18px; padding: var(--space-5); text-align: left; display: flex; flex-direction: column; justify-content: space-between; box-sizing: border-box; min-height: 240px;">
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--color-border-light); padding-bottom: var(--space-2); margin-bottom: var(--space-3);">
+              <h3 style="margin: 0; font-size: var(--text-base); font-weight: 700; color: var(--color-text-primary);">
+                Resume Intelligence
+              </h3>
+              <a routerLink="/resumes" style="font-size: var(--text-xs); font-weight: 700; color: var(--color-primary); text-decoration: none;">View Resume</a>
             </div>
-            <div style="display: flex; flex-direction: column; background: var(--color-surface-alt); padding: var(--space-3) var(--space-1); border-radius: var(--radius-md);">
-              <span style="font-size: var(--text-lg); font-weight: 800; color: var(--color-success);">
-                {{ vm()?.applicationSummary?.offer }}
-              </span>
-              <span style="font-size: 9px; font-weight: 700; color: var(--color-text-secondary); text-transform: uppercase;">Offer</span>
+
+            <div class="flex justify-between align-center" style="width: 100%; margin-top: var(--space-2); display: flex; justify-content: space-between; align-items: center;">
+              <div style="display: flex; flex-direction: column; gap: 2px;">
+                <span style="font-size: var(--text-2xl); font-weight: 800; color: var(--color-primary);">
+                  {{ vm()?.resumeIntelligence?.resumeScore }}%
+                </span>
+                <span style="font-size: 10px; font-weight: 700; color: var(--color-text-secondary); text-transform: uppercase;">Resume Score</span>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 2px; text-align: right;">
+                <span style="font-size: var(--text-sm); font-weight: 700; color: var(--color-text-primary);">
+                  {{ vm()?.resumeIntelligence?.summary?.role || 'Developer' }}
+                </span>
+                <span style="font-size: 10px; font-weight: 700; color: var(--color-text-secondary); text-transform: uppercase;">Detected Role</span>
+              </div>
+            </div>
+
+            <div class="flex justify-between align-center" style="width: 100%; border-top: 1px solid var(--color-border-light); padding-top: var(--space-3); margin-top: var(--space-3); display: flex; justify-content: space-between; align-items: center;">
+              <div style="display: flex; flex-direction: column;">
+                <span style="font-size: var(--text-sm); font-weight: 700; color: var(--color-text-primary);">
+                  {{ vm()?.resumeIntelligence?.summary?.experience || '0 Years' }}
+                </span>
+                <span style="font-size: 10px; color: var(--color-text-secondary); font-weight: 600; text-transform: uppercase;">Experience</span>
+              </div>
+              <div style="display: flex; flex-direction: column; text-align: right;">
+                <span style="font-size: var(--text-sm); font-weight: 700; color: var(--color-text-primary);">
+                  {{ vm()?.resumeIntelligence?.skills?.length || 0 }}
+                </span>
+                <span style="font-size: 10px; color: var(--color-text-secondary); font-weight: 600; text-transform: uppercase;">Skills Found</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Career Insights -->
+        <div class="card p-md" style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 18px; padding: var(--space-5); text-align: left; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; min-height: 240px;">
+          <div>
+            <h3 style="margin: 0 0 var(--space-3) 0; font-size: var(--text-base); font-weight: 700; color: var(--color-text-primary); border-bottom: 1px solid var(--color-border-light); padding-bottom: var(--space-2);">
+              Career Insights
+            </h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3);">
+              @for (insight of vm()?.careerInsights; track insight.label) {
+                <div style="background-color: var(--color-surface-alt); border-radius: var(--radius-md); padding: var(--space-3); border: 1px solid var(--color-border-light);">
+                  <p style="margin: 0 0 var(--space-1) 0; font-size: 9px; font-weight: 700; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">
+                    {{ insight.label }}
+                  </p>
+                  <p style="margin: 0; font-size: var(--text-xs); font-weight: 700; color: var(--color-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    {{ insight.value }}
+                  </p>
+                </div>
+              }
             </div>
           </div>
         </div>
 
       </div>
 
-      <!-- ── SECTION 7: Career Insights ── -->
-      <div class="card p-md flex flex-column gap-sm" style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 18px; padding: var(--space-5); text-align: left; display: flex; flex-direction: column; gap: var(--space-3); width: 100%; box-sizing: border-box;">
-        <h3 style="margin: 0; font-size: var(--text-base); font-weight: 700; color: var(--color-text-primary); border-bottom: 1px solid var(--color-border-light); padding-bottom: var(--space-2);">
-          ⚡ AI Career Insights
-        </h3>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-4); margin-top: var(--space-2); width: 100%;">
-          @for (insight of vm()?.careerInsights; track insight.label) {
-            <div style="background-color: var(--color-surface-alt); border-radius: var(--radius-md); padding: var(--space-4); border: 1px solid var(--color-border-light);">
-              <p style="margin: 0 0 var(--space-1) 0; font-size: 9px; font-weight: 700; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.05em;">
-                {{ insight.label }}
-              </p>
-              <p style="margin: 0; font-size: var(--text-sm); font-weight: 700; color: var(--color-primary);">
-                {{ insight.value }}
-              </p>
-            </div>
-          }
+      <!-- ── SECTION 4 & 5: Latest Recommendations + Job Pipeline ── -->
+      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: var(--space-4); margin-bottom: var(--space-4); width: 100%; box-sizing: border-box; align-items: start;">
+        
+        <!-- Latest Recommendations -->
+        <div class="flex flex-column gap-md" style="display: flex; flex-direction: column; gap: var(--space-4); box-sizing: border-box;">
+          <div class="flex justify-between align-center" style="display: flex; justify-content: space-between; align-items: center; gap: var(--space-2);">
+            <h2 style="margin: 0; font-size: var(--text-lg); font-weight: 700; color: var(--color-text-primary);">
+              Recent AI Recommendations
+            </h2>
+            <a routerLink="/recommendations" class="btn btn-ghost btn-sm flex align-center gap-xs" style="display: inline-flex; align-items: center; gap: 4px; font-weight: 600;">
+              View All
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+              </svg>
+            </a>
+          </div>
+
+          <div class="recommendations-list" style="display: grid; gap: var(--space-4); width: 100%;">
+            @for (rec of vm()?.latestRecommendationRun?.items | slice:0:3; track rec.jobId) {
+              <app-recommendation-card
+                [recommendation]="rec"
+                (save)="saveJob($event)"
+                (apply)="applyJob($event)"
+                (viewDetails)="viewJobDetails($event)">
+              </app-recommendation-card>
+            } @empty {
+              <div class="p-lg card text-center" style="padding: var(--space-8); border: 1px dashed var(--color-border); border-radius: 12px; background-color: var(--color-surface-alt); width: 100%; box-sizing: border-box;">
+                <p style="margin: 0; color: var(--color-text-secondary);">No recommendations generated yet. Click Generate Recommendations to start.</p>
+              </div>
+            }
+          </div>
         </div>
+
+        <!-- Job Search Pipeline -->
+        <div class="card p-md flex flex-column gap-sm" style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 18px; padding: var(--space-5); text-align: left; display: flex; flex-direction: column; gap: var(--space-3); box-sizing: border-box;">
+          <h3 style="margin: 0; font-size: var(--text-base); font-weight: 700; color: var(--color-text-primary); border-bottom: 1px solid var(--color-border-light); padding-bottom: var(--space-2);">
+            Job Search Pipeline
+          </h3>
+          <div style="display: flex; flex-direction: column; gap: var(--space-2); margin-top: var(--space-1); width: 100%;">
+            <div style="display: flex; justify-content: space-between; align-items: center; background: var(--color-surface-alt); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); border: 1px solid var(--color-border-light);">
+              <span style="font-size: var(--text-xs); font-weight: 700; color: var(--color-text-secondary); text-transform: uppercase;">Saved</span>
+              <span style="font-size: var(--text-lg); font-weight: 800; color: var(--color-text-primary);">
+                {{ vm()?.applicationSummary?.saved }}
+              </span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; background: var(--color-surface-alt); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); border: 1px solid var(--color-border-light);">
+              <span style="font-size: var(--text-xs); font-weight: 700; color: var(--color-text-secondary); text-transform: uppercase;">Applied</span>
+              <span style="font-size: var(--text-lg); font-weight: 800; color: var(--color-primary);">
+                {{ vm()?.applicationSummary?.applied }}
+              </span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; background: var(--color-surface-alt); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); border: 1px solid var(--color-border-light);">
+              <span style="font-size: var(--text-xs); font-weight: 700; color: var(--color-text-secondary); text-transform: uppercase;">Interview</span>
+              <span style="font-size: var(--text-lg); font-weight: 800; color: var(--color-warning);">
+                {{ vm()?.applicationSummary?.interview }}
+              </span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; background: var(--color-surface-alt); padding: var(--space-3) var(--space-4); border-radius: var(--radius-md); border: 1px solid var(--color-border-light);">
+              <span style="font-size: var(--text-xs); font-weight: 700; color: var(--color-text-secondary); text-transform: uppercase;">Offer</span>
+              <span style="font-size: var(--text-lg); font-weight: 800; color: var(--color-success);">
+                {{ vm()?.applicationSummary?.offer }}
+              </span>
+            </div>
+          </div>
+        </div>
+
       </div>
 
-      <!-- ── SECTION 6: Recent Recommendations ── -->
-      <div class="flex flex-column gap-md" style="display: flex; flex-direction: column; gap: var(--space-4); width: 100%; box-sizing: border-box;">
-        <div class="flex justify-between align-center" style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: var(--space-2);">
-          <h2 style="margin: 0; font-size: var(--text-lg); font-weight: 700; color: var(--color-text-primary);">
-            Recent Recommendations
-          </h2>
-          <a routerLink="/recommendations" class="btn btn-ghost btn-sm flex align-center gap-xs" style="display: inline-flex; align-items: center; gap: 4px; font-weight: 600;">
-            View All
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
-            </svg>
-          </a>
+      <!-- ── SECTION 6 & 7: Recently Viewed Jobs + Quick Actions ── -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); width: 100%; box-sizing: border-box; margin-bottom: var(--space-4);">
+        
+        <!-- Recently Viewed Jobs -->
+        <div class="card p-md" style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 18px; padding: var(--space-5); text-align: left; box-sizing: border-box;">
+          <h3 style="margin: 0 0 var(--space-3) 0; font-size: var(--text-base); font-weight: 700; color: var(--color-text-primary); border-bottom: 1px solid var(--color-border-light); padding-bottom: var(--space-2);">
+            Recently Viewed Jobs
+          </h3>
+          <div style="display: flex; flex-direction: column; gap: var(--space-2);">
+            @for (job of vm()?.recentlyViewedJobs | slice:0:3; track job.id) {
+              <div (click)="router.navigate(['/jobs', job.id])" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center; padding: var(--space-3) var(--space-4); background: var(--color-surface-alt); border-radius: var(--radius-md); border: 1px solid var(--color-border-light); transition: transform 0.2s ease;">
+                <div>
+                  <span style="font-size: var(--text-sm); font-weight: 700; color: var(--color-text-primary);">{{ job.title }}</span>
+                  <span style="font-size: var(--text-xs); color: var(--color-text-secondary); margin-left: var(--space-2);">{{ job.company }}</span>
+                </div>
+                <span *ngIf="job.remote" class="badge badge-blue" style="font-size: 10px; font-weight: 600; padding: 2px 6px;">Remote</span>
+              </div>
+            } @empty {
+              <p style="margin: 0; font-size: var(--text-xs); color: var(--color-text-secondary); padding: var(--space-4); text-align: center; border: 1px dashed var(--color-border); border-radius: var(--radius-md); background: var(--color-surface-alt);">No jobs viewed recently.</p>
+            }
+          </div>
         </div>
 
-        <div class="recommendations-list" style="display: grid; gap: var(--space-4); width: 100%;">
-          @for (rec of vm()?.recentRecommendations; track rec.jobId) {
-            <app-recommendation-card
-              [recommendation]="rec"
-              (save)="saveJob($event)"
-              (apply)="applyJob($event)"
-              (viewDetails)="viewJobDetails($event)">
-            </app-recommendation-card>
-          } @empty {
-            <div class="p-lg card text-center" style="padding: var(--space-8); border: 1px dashed var(--color-border); border-radius: 12px; background-color: var(--color-surface-alt); width: 100%; box-sizing: border-box;">
-              <p style="margin: 0; color: var(--color-text-secondary);">No recommendations matches found yet. Please run recommendations generation.</p>
-            </div>
-          }
+        <!-- Quick Actions -->
+        <div class="card p-md" style="background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 18px; padding: var(--space-5); text-align: left; box-sizing: border-box;">
+          <h3 style="margin: 0 0 var(--space-3) 0; font-size: var(--text-base); font-weight: 700; color: var(--color-text-primary); border-bottom: 1px solid var(--color-border-light); padding-bottom: var(--space-2);">
+            Quick Actions
+          </h3>
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-3); margin-top: var(--space-2);">
+            <button class="btn btn-outline btn-sm" (click)="startGeneration()" style="justify-content: center; display: flex; align-items: center;">Generate Recommendations</button>
+            <button class="btn btn-outline btn-sm" routerLink="/jobs" style="justify-content: center; display: flex; align-items: center;">Browse Jobs</button>
+            <button class="btn btn-outline btn-sm" routerLink="/resumes" style="justify-content: center; display: flex; align-items: center;">Upload Resume</button>
+            <button class="btn btn-outline btn-sm" routerLink="/applications" style="justify-content: center; display: flex; align-items: center;">Applications</button>
+            <button class="btn btn-outline btn-sm" routerLink="/saved-jobs" style="justify-content: center; display: flex; align-items: center; grid-column: span 2;">Saved Jobs</button>
+          </div>
         </div>
+
       </div>
 
     }

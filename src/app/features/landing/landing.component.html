@@ -1,28 +1,4 @@
 <div class="landing-page flex flex-column w-100">
-  <!-- Header Navbar -->
-  <header class="navbar flex justify-between align-center p-md">
-    <div class="container flex justify-between align-center">
-      <div class="brand flex align-center gap-sm">
-        <div class="brand-logo flex align-center justify-center" style="width: 32px; height: 32px; background-color: var(--color-primary-light); color: var(--color-primary); border-radius: var(--radius-md);">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="2" y="7" width="20" height="14" rx="2"/>
-            <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
-          </svg>
-        </div>
-        <span class="brand-name" style="font-size: var(--text-h3-size); font-weight: 700; color: var(--color-text-primary);">CareerAI</span>
-      </div>
-      <nav class="nav-links flex gap-md align-center">
-        <a href="#features">Features</a>
-        <a href="#how-it-works">How It Works</a>
-        @if (authService.isAuthenticated()) {
-          <a routerLink="/dashboard" class="btn btn-primary btn-sm">Dashboard</a>
-        } @else {
-          <a routerLink="/login" class="btn btn-ghost btn-sm">Sign In</a>
-          <a routerLink="/register" class="btn btn-primary btn-sm">Get Started</a>
-        }
-      </nav>
-    </div>
-  </header>
 
   <!-- Hero Section -->
   <section class="hero-section flex align-center justify-center">

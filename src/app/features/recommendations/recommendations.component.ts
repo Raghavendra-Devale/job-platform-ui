@@ -43,11 +43,11 @@ export class RecommendationsComponent implements OnInit {
   loadingProgress = signal<string>('Analyzing resume...');
 
   ngOnInit(): void {
-    // Check if recommendations already exist to bypass initial state
-    this.recService.getRecommendations().subscribe({
-      next: (data) => {
-        if (data && data.length > 0) {
-          this.recommendations.set(data);
+    // Load persisted recommendations via GET /recommendations/latest
+    this.recService.getLatestRun().subscribe({
+      next: (run) => {
+        if (run && run.items && run.items.length > 0) {
+          this.recommendations.set(run.items);
           this.state.set('success');
         } else {
           this.state.set('initial');
@@ -80,12 +80,13 @@ export class RecommendationsComponent implements OnInit {
       timeouts.push(t);
     });
 
-    this.recService.getRecommendations().subscribe({
-      next: (data) => {
-        // Ensure minimum duration for user-friendly AI analysis feeling
+    this.dashboardService.regenerateRecommendations().subscribe({
+      next: (run) => {
+        timeouts.forEach(clearTimeout);
         setTimeout(() => {
-          this.recommendations.set(data);
-          this.state.set(data.length > 0 ? 'success' : 'initial');
+          const items = run?.items ?? [];
+          this.recommendations.set(items);
+          this.state.set(items.length > 0 ? 'success' : 'initial');
           this.toastService.showSuccess('Job recommendations generated successfully!');
         }, 4600);
       },
@@ -165,6 +166,6 @@ export class RecommendationsComponent implements OnInit {
   }
 
   viewJobDetails(jobId: number): void {
-    this.router.navigate(['/jobs', jobId]);
+    this.router.navigate(['/recommendations', jobId]);
   }
 }
